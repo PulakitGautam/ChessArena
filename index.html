@@ -104,7 +104,7 @@ tbody tr:hover{background:#1a2030}
 <div class="shell">
 <aside class="sidebar"><div class="brand"><div class="mark"><svg viewBox="0 0 45 45" width="30" height="30" aria-hidden="true" style="--f:#11101c;--s:#11101c"><use href="#n"/></svg></div><div><h1>Jester14 Arena</h1><small>Chess tournament hub</small></div></div>
 <nav class="nav" aria-label="Main"><button class="active" data-view="home">Overview</button><button data-view="tournaments">Tournaments</button><button data-view="boardview">Chessboard</button><button data-view="players">Players</button></nav>
-<div class="sidefoot">Saved on this device · v0.6</div></aside>
+<div class="sidefoot">Saved on this device · v0.7</div></aside>
 <main class="main">
 <div id="libAlert" class="alert" hidden>The chess engine failed to load, so the board is disabled. Check your connection and reload.</div>
 <header class="topbar"><div><div class="eyebrow" id="eyebrow">Your chess HQ</div><h2 id="pageTitle">Welcome to the Arena</h2></div>
@@ -163,6 +163,10 @@ const name=pid=>data.players.find(p=>p.id===pid)?.name||'Unknown';
 const done=p=>p.bye||!!p.result;
 const games=t=>t.rounds.reduce((n,r)=>n+r.pairings.filter(p=>!p.bye&&p.result).length,0);
 const pk=(a,b)=>[a,b].sort().join('|');
+const FMT={swiss:'Swiss system',roundrobin:'Round robin',knockout:'Knockout'};
+const isKO=()=>data.tournaments.find(t=>t.id===match?.t)?.format==='knockout';
+const KODRAW='Knockout games need a winner. Play a tiebreak and record that result.';
+function champ(t){if(t.format!=='knockout')return null;const l=t.rounds[t.rounds.length-1];if(!l||l.pairings.length!==1||!done(l.pairings[0]))return null;const p=l.pairings[0];return p.bye?p.white:p.result==='1-0'?p.white:p.result==='0-1'?p.black:null}
 
 function go(v){view=v;document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+v));document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.view===v||(v==='detail'&&x.dataset.view==='tournaments')));
 const T={home:['Your chess HQ','Welcome to the Arena'],tournaments:['Your events','Tournaments'],players:['Player directory','Players'],detail:['Tournament workspace',getT()?.name||'Tournament'],boardview:['Make your move','Chessboard']}[v];$('eyebrow').textContent=T[0];$('pageTitle').textContent=T[1];window.scrollTo(0,0)}
@@ -177,10 +181,25 @@ const fmt=n=>n%1?String(n).replace('.5','½').replace(/^0½/,'½'):String(n);
 
 /* Swiss pairing with backtracking so rematches are avoided whenever possible */
 function solve(pool,played,allow){if(!pool.length)return[];const[a,...rest]=pool;for(const b of rest){if(!allow&&played.has(pk(a,b)))continue;const r=solve(rest.filter(x=>x!==b),played,allow);if(r)return[[a,b],...r]}return null}
+/* Round robin (circle method) and knockout (seeded bracket) */
+const mk=([a,b])=>(a==null||b==null)?{white:a??b,black:null,bye:true,result:null,pgn:''}:{white:a,black:b,result:null,pgn:''};
+function genRR(t,act){
+  if(!t.schedule){const arr=act.slice();if(arr.length%2)arr.push(null);const n=arr.length,rounds=[];
+    for(let r=0;r<n-1;r++){const pr=[];for(let i=0;i<n/2;i++){let a=arr[i],b=arr[n-1-i];if((r+i)%2)[a,b]=[b,a];pr.push([a,b])}rounds.push(pr);arr.splice(1,0,arr.pop())}
+    t.schedule=rounds;t.maxRounds=rounds.length}
+  const r=t.schedule[t.rounds.length]||[];
+  return r.filter(([a,b])=>!(a&&t.withdrawn.includes(a))&&!(b&&t.withdrawn.includes(b))).map(mk)}
+function genKO(t,act){
+  if(!t.rounds.length){const n=act.length;let size=2;while(size<n)size*=2;let ord=[1,2];while(ord.length<size)ord=ord.flatMap(x=>[x,ord.length*2+1-x]);
+    t.maxRounds=Math.log2(size);const seat=ord.map(x=>x<=n?act[x-1]:null),pr=[];for(let i=0;i<size;i+=2)pr.push([seat[i],seat[i+1]]);return pr.map(mk)}
+  const w=t.rounds[t.rounds.length-1].pairings.map(p=>p.bye||p.result==='1-0'?p.white:p.black),pr=[];
+  for(let i=0;i<w.length;i+=2)pr.push([w[i],w[i+1]]);return pr.map(mk)}
 function genRound(t){const act=t.players.filter(p=>!t.withdrawn.includes(p));
 if(act.length<2)return toast('Add at least two active players first');
 if(t.rounds.length>=t.maxRounds)return toast('All planned rounds are already generated');
 const last=t.rounds[t.rounds.length-1];if(last&&!last.pairings.every(done))return toast('Record every result in the last round first');
+const fm=t.format||'swiss';
+if(fm!=='swiss'){const list=fm==='roundrobin'?genRR(t,act):genKO(t,act);if(!list.length)return toast('No games to play this round');t.rounds.push({number:t.rounds.length+1,pairings:list});t.status='active';save();return toast(`Round ${t.rounds.length} generated`)}
 const order=standings(t).filter(s=>act.includes(s.id)).map(s=>s.id),played=new Set(),hadBye=new Set();
 t.rounds.forEach(r=>r.pairings.forEach(p=>p.bye?hadBye.add(p.white):played.add(pk(p.white,p.black))));
 let bye=null,pairs=null;
@@ -206,9 +225,9 @@ if(cur&&getT())renderDetail();else if(view==='detail')go('tournaments');
 renderBoard();renderMatchSel()}
 
 function renderDetail(){const t=getT();if(!t)return;if(view==='detail')$('pageTitle').textContent=t.name;
-$('dName').textContent=t.name;$('dMeta').textContent=`Swiss system · Created ${new Date(t.created).toLocaleDateString()}${RO?' · Live view, refreshes every 15 seconds':''}`;
+$('dName').textContent=t.name;$('dMeta').textContent=`${FMT[t.format||'swiss']} · Created ${new Date(t.created).toLocaleDateString()}${champ(t)?' · Champion: '+name(champ(t)):''}${RO?' · Live view, refreshes every 15 seconds':''}`;
 $('dRound').textContent=`${t.rounds.length}/${t.maxRounds}`;$('dPlayers').textContent=t.players.length;$('dGames').textContent=games(t);$('dStatus').textContent=t.status==='finished'?'Finished':t.rounds.length?'Active':'Setup';
-const rc=$('roundCount');rc.innerHTML='';for(let i=Math.max(1,t.rounds.length);i<=15;i++)rc.add(new Option(i,i));rc.value=String(t.maxRounds);
+const rc=$('roundCount');rc.innerHTML='';for(let i=Math.max(1,t.rounds.length);i<=15;i++)rc.add(new Option(i,i));rc.value=String(t.maxRounds);rc.disabled=(t.format||'swiss')!=='swiss';
 $('evPlayers').innerHTML=t.players.map(p=>`<span class="chip ${t.withdrawn.includes(p)?'out':''}">${esc(name(p))}<button data-rm-event="${p}" aria-label="${t.rounds.length?'Withdraw or restore':'Remove'} ${esc(name(p))}">${t.rounds.length?(t.withdrawn.includes(p)?'↺':'⏏'):'×'}</button></span>`).join('')||'<span class="muted">Add players to begin.</span>';
 const rows=standings(t);
 $('standings').innerHTML=rows.length?`<table><thead><tr><th>#</th><th>Player</th><th>Pts</th><th>W</th><th>D</th><th>L</th><th>Buch.</th></tr></thead><tbody>${rows.map((p,i)=>`<tr><td class="rank r${i+1}">${i+1}</td><td>${esc(p.name)}${p.bye?' <span class="pill gold">Bye</span>':''}${p.out?' <span class="pill">Withdrawn</span>':''}</td><td><b>${fmt(p.score)}</b></td><td>${p.w}</td><td>${p.d}</td><td>${p.l}</td><td>${fmt(p.bh)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Standings appear after you add players.</div>';
@@ -221,13 +240,13 @@ $('cross').innerHTML=t.rounds.length?`<table><thead><tr><th></th>${rows.map((r,i
 
 /* actions */
 function addGlobal(n){n=n.trim().slice(0,40);if(!n)return null;let p=data.players.find(x=>x.name.toLowerCase()===n.toLowerCase());if(!p){p={id:uid(),name:n};data.players.push(p)}return p}
-function newTournament(){const n=prompt('Tournament name?','Jester14 Chess Championship');if(!n||!n.trim())return;const t={id:uid(),name:n.trim(),created:new Date().toISOString(),maxRounds:5,status:'setup',players:[],rounds:[],withdrawn:[]};data.tournaments.push(t);cur=t.id;save();go('detail');toast('Tournament created')}
-function addEvPlayers(){const t=getT();if(!t)return;if(t.status==='finished')return toast('Reopen the tournament to add players');
+function newTournament(){const n=prompt('Tournament name?','Jester14 Chess Championship');if(!n||!n.trim())return;const f=prompt('Format?\n1 = Swiss\n2 = Round robin (everyone plays everyone)\n3 = Knockout (single elimination)','1');if(f===null)return;const t={format:f==='2'?'roundrobin':f==='3'?'knockout':'swiss',id:uid(),name:n.trim(),created:new Date().toISOString(),maxRounds:5,status:'setup',players:[],rounds:[],withdrawn:[]};data.tournaments.push(t);cur=t.id;save();go('detail');toast('Tournament created')}
+function addEvPlayers(){const t=getT();if(!t)return;if(t.status==='finished')return toast('Reopen the tournament to add players');if(t.rounds.length&&(t.format||'swiss')!=='swiss')return toast('Players cannot be added to this format after Round 1');
 const raw=prompt('Player names, separated by commas or new lines:',data.players.filter(p=>!t.players.includes(p.id)).map(p=>p.name).join(', '));if(raw===null)return;
 let n=0;raw.split(/[\n,]+/).forEach(x=>{const p=addGlobal(x);if(p&&!t.players.includes(p.id)){t.players.push(p.id);n++}});save();toast(n?`${n} player${n===1?'':'s'} added`:'No new players added')}
 function rmEvPlayer(pid){const t=getT();if(!t)return;if(!t.rounds.length){t.players=t.players.filter(x=>x!==pid)}else if(t.withdrawn.includes(pid)){t.withdrawn=t.withdrawn.filter(x=>x!==pid)}else{if(!confirm(`Withdraw ${name(pid)}? They will be skipped in new pairings but keep their results.`))return;t.withdrawn.push(pid)}save()}
 function rmGlobal(pid){const used=data.tournaments.some(t=>t.players.includes(pid));if(used)return toast('This player is in a tournament, so they cannot be removed from the directory');data.players=data.players.filter(p=>p.id!==pid);save()}
-function scoreMatch(k,res){const[rn,ix]=k.split(':'),p=getT()?.rounds.find(r=>r.number===+rn)?.pairings[+ix];if(!p||p.bye)return;p.result=p.result===res?null:res;save()}
+function scoreMatch(k,res){if(getT()?.format==='knockout'&&res==='1/2-1/2')return toast(KODRAW);const[rn,ix]=k.split(':'),p=getT()?.rounds.find(r=>r.number===+rn)?.pairings[+ix];if(!p||p.bye)return;p.result=p.result===res?null:res;save()}
 function loadDemo(){if(!confirm('Add a demo tournament with six players?'))return;const ids=['Magnus Bot','Stockfish Jr','Claude','GPT Knight','Gemini Rook','Llama Bishop'].map(n=>addGlobal(n).id);
 const t={id:uid(),name:'Demo Tournament',created:new Date().toISOString(),maxRounds:4,status:'setup',players:ids,rounds:[],withdrawn:[]};data.tournaments.push(t);cur=t.id;
 const res=['1-0','1/2-1/2','0-1'];for(let i=0;i<2;i++){genRound(t);t.rounds[t.rounds.length-1].pairings.forEach(p=>{if(!p.bye)p.result=res[Math.floor(Math.random()*3)]})}genRound(t);save();go('detail');toast('Demo loaded. Round 3 is open for you to play.')}
@@ -258,12 +277,12 @@ function move(from,to){if(clock.over)return toast(clock.over.text);const ms=ches
 if(ms.some(m=>m.flags.includes('p'))){promo=(prompt('Promote to (q, r, b or n)?','q')||'q').toLowerCase();if(!'qrbn'.includes(promo))promo='q'}
 const m=chess.move({from,to,promotion:promo});if(!m)return toast('That move is not legal');after()}
 function after(){clockMove();sel=null;targets=[];renderBoard();finish(overInfo())}
-function finish(o){if(!o)return;const p=pair();if(p&&!p.result){p.pgn=chess.pgn();p.result=o.res;save();toast(o.text+' · result recorded')}else toast(o.text)}
+function finish(o){if(!o)return;const p=pair();if(p&&!p.result){if(isKO()&&o.res==='1/2-1/2')return toast('Drawn. '+KODRAW);p.pgn=chess.pgn();p.result=o.res;save();toast(o.text+' · result recorded')}else toast(o.text)}
 function typed(){const v=$('moveIn').value.trim();if(!v||!ready)return;if(clock.over)return toast(clock.over.text);let m=null;
 if(/^[a-h][1-8][a-h][1-8][qrbn]?$/i.test(v)){const l=v.toLowerCase();m=chess.move({from:l.slice(0,2),to:l.slice(2,4),promotion:l[4]||'q'})}else m=chess.move(v,{sloppy:true});
 if(!m)return toast('Move not recognised or illegal');$('moveIn').value='';after()}
 function saveMoves(){const p=pair();if(!p)return toast('Choose a tournament match first');p.pgn=chess.pgn();const o=overInfo();if(o&&!p.result)p.result=o.res;save();toast('Moves saved to match')}
-function setResult(r){const p=pair();if(!p)return toast('Pick a tournament match first');p.result=r;save();toast('Result recorded')}
+function setResult(r){if(isKO()&&r==='1/2-1/2')return toast(KODRAW);const p=pair();if(!p)return toast('Pick a tournament match first');p.result=r;save();toast('Result recorded')}
 function copy(text,msg){navigator.clipboard?.writeText(text).then(()=>toast(msg)).catch(()=>prompt('Copy this:',text))||prompt('Copy this:',text)}
 function copyPrompt(){const s=chess.turn()==='w'?'White':'Black';copy(`You are playing a legal game of standard chess as ${s}. Return exactly ONE move in SAN notation (for example Nf3, exd5, O-O, or e8=Q), with no explanation. Choose a strong move.\nCurrent position (FEN): ${chess.fen()}\nMoves so far (PGN): ${chess.pgn()||'(none)'}\nYour move:`,'AI prompt copied')}
 function dl(text,file,type){const a=document.createElement('a'),u=URL.createObjectURL(new Blob([text],{type}));a.href=u;a.download=file;a.click();URL.revokeObjectURL(u)}
