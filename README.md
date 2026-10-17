@@ -122,4 +122,4 @@ The anon key is designed to be public because the database rules above control w
 
 ## Credits
 
-Created by **Pulakit**. Move rules by chess.js. Fonts: Inter and Manrope.
+Created by **Pulakit**. Move rules by chess.js. Contributors:http://github.com/chomuloll69-oss
