@@ -14,6 +14,7 @@ Run chess tournaments from any device. Create Swiss, round robin or knockout eve
 - **Round robin** using the circle method, so everyone plays everyone exactly once.
 - **Knockout** with a seeded bracket and automatic byes for the top seeds. Draws are not allowed, so a tiebreak result is required.
 - Standings, a crosstable, player withdrawals, editable results, and finish/reopen controls.
+- **Templates:** start from built-in setups (club night, blitz Swiss, rapid round robin, quick knockout) or save your own, including the player list and default clock.
 - A **demo tournament** button so new visitors can see a filled-in event straight away.
 
 ![Tournament standings and pairings](docs/screenshots/tournament.png)
@@ -23,7 +24,7 @@ Run chess tournaments from any device. Create Swiss, round robin or knockout eve
 - Clean vector pieces that look the same on every device.
 - Pawn promotion picker, board flip, undo, and typed moves in SAN or UCI (`Nf3`, `e2e4`).
 - Automatic game-over detection: checkmate, stalemate, insufficient material, threefold repetition and the 50-move rule. Results are recorded straight into tournament matches.
-- **Chess clock** with presets from 1+0 to 30+0, increments, and loss on time.
+- **Chess clock** with presets from 1+0 to 30+0, increments and loss on time, plus pause and resume, and +1 or −1 minute adjustments for each player.
 - Copy FEN and **download PGN** with proper headers.
 
 ![Interactive chessboard](docs/screenshots/board.png)
@@ -108,6 +109,7 @@ The anon key is designed to be public because the database rules above control w
 - Tournaments are **publicly readable** by anyone who has the link, including the player names. Do not use real names of people who have not agreed to that.
 - Edit a tournament from **one device at a time**. If two devices change the same tournament while offline, the version with more saved changes wins.
 - Live share links need an internet connection for the people viewing them.
+- Your own templates are saved on the device and included in backups, but they do not sync between devices yet.
 - In a round robin, if a player withdraws, their remaining games are skipped rather than counted as forfeits.
 - Open the site once with internet on each device so the offline app can save the files it needs.
 
