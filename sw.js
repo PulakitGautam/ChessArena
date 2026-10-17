@@ -1,5 +1,5 @@
 /* Chess Arena service worker: makes the app open and run offline. */
-const V = 'arena-v11';
+const V = 'arena-v12';
 const SHELL = ['./', './index.html', './index.css', './index.js', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 const CDN = [
   'https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js',
