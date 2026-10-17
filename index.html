@@ -69,8 +69,10 @@ td.x{text-align:center;padding:9px 6px}.rank{color:var(--accent2);font-weight:80
 .sq.cap:after{content:"";position:absolute;inset:3px;border:5px solid #00000030;border-radius:50%;pointer-events:none}
 .sq i{position:absolute;font:700 11px/1 sans-serif;pointer-events:none}.sq i.rk{top:3px;left:4px}.sq i.fl{bottom:3px;right:4px}
 .sq.light i{color:#739552}.sq.dark i{color:#ebecd0}
-.pc{pointer-events:none;-webkit-text-stroke:1.3px #1b1b1b;paint-order:stroke fill;filter:drop-shadow(0 2px 1px #0005)}
-.pc.w{color:#fff}.pc.b{color:#1d1d1f;-webkit-text-stroke:1px #000;filter:drop-shadow(0 0 1px #fff9) drop-shadow(0 2px 1px #0005)}
+.pc{width:90%;height:90%;pointer-events:none;filter:drop-shadow(0 2px 1.5px #0005)}
+.pc.w{--f:#fbfaf5;--s:#2a2a30}.pc.b{--f:#4a4a55;--s:#0f0f12}
+.sq:hover{filter:brightness(1.07)}
+.board{border:6px solid #2a2f3f;border-radius:10px}
 .tools{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:12px}.tools button{font-size:13px}
 .moves{background:#0c1017;border:1px solid #293142;border-radius:10px;padding:10px;min-height:90px;max-height:220px;overflow:auto;font:13px/1.8 ui-monospace,monospace;color:#c6cce0}
 .mrow{display:grid;grid-template-columns:30px 1fr 1fr;gap:7px}.mrow span:first-child{color:#6f7b92}
@@ -81,21 +83,32 @@ td.x{text-align:center;padding:9px 6px}.rank{color:var(--accent2);font-weight:80
 .alert{background:#3a2025;border:1px solid #7a3a45;color:#ffb4bb;padding:12px 16px;border-radius:10px;margin-bottom:16px}
 @media(max-width:900px){.shell{grid-template-columns:1fr}.sidebar{position:sticky;top:0;z-index:10;border-right:0;border-bottom:1px solid var(--line);padding:10px 12px;flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}.brand small,.sidefoot{display:none}.nav{display:flex;margin-left:auto;overflow-x:auto}.nav button{white-space:nowrap;padding:8px 10px;font-size:13px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.two,.boardlay{grid-template-columns:1fr}.bpanel{max-width:660px}.hero .big{display:none}}
 @media(max-width:520px){.pairing{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}.btns{grid-column:1/-1;justify-content:center}.sq{font-size:clamp(27px,9vw,45px)}}
-@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+.view.active{animation:fadein .28s ease}@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.hero{position:relative;overflow:hidden;box-shadow:0 18px 50px #7362df22}
+.hero:before{content:"";position:absolute;right:-60px;top:-80px;width:300px;height:300px;border-radius:50%;background:radial-gradient(#7362df55,transparent 70%);pointer-events:none}
+.heroknight{width:118px;height:118px;--f:#c2b8ff;--s:#2a2450;filter:drop-shadow(0 10px 22px #7362df88);position:relative}
+.hero .big{font-size:0}
+.card{transition:transform .15s,border-color .15s,box-shadow .15s}.card:hover{transform:translateY(-3px);box-shadow:0 12px 30px #0005}
+.stat{border-top:3px solid #7362df66}
+tbody tr:hover{background:#1a2030}
+.rank.r1{color:#ffd479}.rank.r2{color:#d6dbe6}.rank.r3{color:#e0a47a}
+.mark svg{display:block}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 .ro #newT,.ro #heroNew,.ro #heroDemo,.ro #importBtn,.ro #exportBtn,.ro #authBtn,.ro #addEv,.ro #genRound,.ro #rename,.ro #delT,.ro #finish,.ro #reopen,.ro #shareBtn,.ro #saveMoves,.ro .results,.ro [data-score],.ro [data-rm-event],.ro [data-rm-player]{display:none}
 .ro #roundCount{pointer-events:none}
 </style></head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="p" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><circle cx="22.5" cy="13" r="5.5"/><path d="M17.5 21h10l-1.5 4c3.5 2.5 5.5 6.5 5.5 11h-19c0-4.5 2-8.5 5.5-11z"/><path d="M11.5 36h22v3.5h-22z"/></g></symbol><symbol id="r" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><path d="M12 39h21v-3.5H12z"/><path d="M14 35.5l1.5-4h14l1.5 4z"/><path d="M15.5 31.5V20h14v11.5z"/><path d="M12.5 20v-7.5H17V15h3.5v-2.5h4V15H28v-2.5h4.5V20z"/></g></symbol><symbol id="n" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><path d="M11 39C10.5 29 14 24 19.5 20C16.5 19.5 14.5 17.5 14.5 14.5L22 6L23.5 8.5C32 9 38 15.5 37.5 25C37.5 31 37 35 37 39Z"/><path d="M26 11C31 14 33 19 33 25" style="fill:none"/><circle cx="21" cy="14" r="1.3" style="fill:var(--s)"/></g></symbol><symbol id="b" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><circle cx="22.5" cy="8.5" r="3.2"/><path d="M22.5 12C28 16 31 21 28 27H17C14 21 17 16 22.5 12z"/><path d="M15 27h15v4H15z"/><path d="M12 31h21l1.5 8h-24z"/><path d="M20 20h5M22.5 17.5v5" style="fill:none"/></g></symbol><symbol id="q" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><path d="M9 14L13 26L16 11L19.5 24L22.5 9L25.5 24L29 11L32 26L36 14L31 33H14Z"/><path d="M12 33h21v6H12z"/><circle cx="9" cy="13" r="2"/><circle cx="16" cy="10" r="2"/><circle cx="22.5" cy="8" r="2"/><circle cx="29" cy="10" r="2"/><circle cx="36" cy="13" r="2"/></g></symbol><symbol id="k" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><path d="M22.5 14C17 10 8.5 14 11.5 22L14.5 33h16L33.5 22C36.5 14 28 10 22.5 14z"/><path d="M12 33h21v6H12z"/><path d="M22.5 4.5v9.5M18.5 8.5h8" style="fill:none"/></g></symbol></defs></svg>
 <div class="shell">
-<aside class="sidebar"><div class="brand"><div class="mark">♞</div><div><h1>Jester14 Arena</h1><small>Chess tournament hub</small></div></div>
+<aside class="sidebar"><div class="brand"><div class="mark"><svg viewBox="0 0 45 45" width="30" height="30" aria-hidden="true" style="--f:#11101c;--s:#11101c"><use href="#n"/></svg></div><div><h1>Jester14 Arena</h1><small>Chess tournament hub</small></div></div>
 <nav class="nav" aria-label="Main"><button class="active" data-view="home">Overview</button><button data-view="tournaments">Tournaments</button><button data-view="boardview">Chessboard</button><button data-view="players">Players</button></nav>
-<div class="sidefoot">Saved on this device · v0.3</div></aside>
+<div class="sidefoot">Saved on this device · v0.4</div></aside>
 <main class="main">
 <div id="libAlert" class="alert" hidden>The chess engine failed to load, so the board is disabled. Check your connection and reload.</div>
 <header class="topbar"><div><div class="eyebrow" id="eyebrow">Your chess HQ</div><h2 id="pageTitle">Welcome to the Arena</h2></div>
 <div class="row"><button class="quiet" id="authBtn">Sign in with GitHub</button><button class="quiet" id="exportBtn">Export data</button><button class="quiet" id="importBtn">Import data</button><input type="file" id="importFile" accept=".json,application/json" hidden><button class="primary" id="newT">＋ New tournament</button></div></header>
 
 <section class="view active" id="view-home">
-<div class="hero"><div><h3>Every tournament. One arena.</h3><p>Create Swiss events, generate pairings, and play or record games on an interactive board. Built for AI showdowns and human tournaments alike.</p><div class="row"><button class="primary" id="heroNew">Create a tournament</button><button id="heroDemo">Load demo tournament</button></div></div><div class="big">♟</div></div>
+<div class="hero"><div><h3>Every tournament. One arena.</h3><p>Create Swiss events, generate pairings, and play or record games on an interactive board. Built for AI showdowns and human tournaments alike.</p><div class="row"><button class="primary" id="heroNew">Create a tournament</button><button id="heroDemo">Load demo tournament</button></div></div><svg class="big heroknight" viewBox="0 0 45 45" aria-hidden="true"><use href="#n"/></svg></div>
 <div class="stats"><div class="stat"><span>Tournaments</span><b id="sT">0</b></div><div class="stat"><span>Players</span><b id="sP">0</b></div><div class="stat"><span>Games recorded</span><b id="sG">0</b></div><div class="stat"><span>Active events</span><b id="sA">0</b></div></div>
 <div class="head"><h3>Recent tournaments</h3><button class="quiet" data-view="tournaments">View all</button></div><div id="recent" class="cards"></div>
 </section>
@@ -193,7 +206,7 @@ $('dRound').textContent=`${t.rounds.length}/${t.maxRounds}`;$('dPlayers').textCo
 const rc=$('roundCount');rc.innerHTML='';for(let i=Math.max(1,t.rounds.length);i<=15;i++)rc.add(new Option(i,i));rc.value=String(t.maxRounds);
 $('evPlayers').innerHTML=t.players.map(p=>`<span class="chip ${t.withdrawn.includes(p)?'out':''}">${esc(name(p))}<button data-rm-event="${p}" aria-label="${t.rounds.length?'Withdraw or restore':'Remove'} ${esc(name(p))}">${t.rounds.length?(t.withdrawn.includes(p)?'↺':'⏏'):'×'}</button></span>`).join('')||'<span class="muted">Add players to begin.</span>';
 const rows=standings(t);
-$('standings').innerHTML=rows.length?`<table><thead><tr><th>#</th><th>Player</th><th>Pts</th><th>W</th><th>D</th><th>L</th><th>Buch.</th></tr></thead><tbody>${rows.map((p,i)=>`<tr><td class="rank">${i+1}</td><td>${esc(p.name)}${p.bye?' <span class="pill gold">Bye</span>':''}${p.out?' <span class="pill">Withdrawn</span>':''}</td><td><b>${fmt(p.score)}</b></td><td>${p.w}</td><td>${p.d}</td><td>${p.l}</td><td>${fmt(p.bh)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Standings appear after you add players.</div>';
+$('standings').innerHTML=rows.length?`<table><thead><tr><th>#</th><th>Player</th><th>Pts</th><th>W</th><th>D</th><th>L</th><th>Buch.</th></tr></thead><tbody>${rows.map((p,i)=>`<tr><td class="rank r${i+1}">${i+1}</td><td>${esc(p.name)}${p.bye?' <span class="pill gold">Bye</span>':''}${p.out?' <span class="pill">Withdrawn</span>':''}</td><td><b>${fmt(p.score)}</b></td><td>${p.w}</td><td>${p.d}</td><td>${p.l}</td><td>${fmt(p.bh)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Standings appear after you add players.</div>';
 $('rounds').innerHTML=t.rounds.length?t.rounds.slice().reverse().map(r=>`<div style="margin-bottom:16px"><div class="head" style="margin:0 0 6px"><b>Round ${r.number}</b><span class="pill ${r.pairings.every(done)?'green':''}">${r.pairings.filter(done).length}/${r.pairings.length} complete</span></div>${r.pairings.map((p,i)=>p.bye?`<div class="pairing"><span class="pname">${esc(name(p.white))}</span><span class="vs">gets</span><span style="color:var(--gold)">Bye · 1 point</span><span></span></div>`:`<div class="pairing"><span class="pname">${esc(name(p.white))}</span><span class="vs">vs</span><span class="pname r">${esc(name(p.black))}</span><div class="btns"><button data-play="${r.number}:${i}">Board</button>${[['1-0','1–0'],['1/2-1/2','½'],['0-1','0–1']].map(([v,l])=>`<button class="${p.result===v?'sel':''}" data-score="${r.number}:${i}:${v}" aria-pressed="${p.result===v}">${l}</button>`).join('')}</div></div>`).join('')}</div>`).join(''):'<div class="empty"><b>No pairings yet</b><p>Add at least two players, then generate Round 1.</p></div>';
 const last=t.rounds[t.rounds.length-1];
 $('genRound').disabled=t.status==='finished'||t.rounds.length>=t.maxRounds||t.players.length<2||(last&&!last.pairings.every(done));
@@ -228,7 +241,7 @@ const files=flip?'hgfedcba':'abcdefgh',ranks=flip?[1,2,3,4,5,6,7,8]:[8,7,6,5,4,3
 ranks.forEach((rk,ri)=>[...files].forEach((f,fi)=>{const sq=f+rk,pc=chess.get(sq),b=document.createElement('button');
 b.className='sq '+((f.charCodeAt(0)-97+rk)%2===0?'dark':'light')+(sel===sq?' sel':'')+(targets.includes(sq)?(pc?' cap':' legal'):'')+(lm&&(lm.from===sq||lm.to===sq)?' last':'');
 b.setAttribute('aria-label',sq+(pc?` ${pc.color==='w'?'white':'black'} ${pc.type}`:''));
-b.innerHTML=(pc?`<span class="pc ${pc.color}">${PC.b[pc.type]}\uFE0E</span>`:'')+(fi===0?`<i class="rk">${rk}</i>`:'')+(ri===7?`<i class="fl">${f}</i>`:'');
+b.innerHTML=(pc?`<svg class="pc ${pc.color}" viewBox="0 0 45 45" aria-hidden="true"><use href="#${pc.type}"/></svg>`:'')+(fi===0?`<i class="rk">${rk}</i>`:'')+(ri===7?`<i class="fl">${f}</i>`:'');
 b.onclick=()=>clickSq(sq);el.appendChild(b)}));
 const o=overInfo(),tn=$('turn');tn.textContent=o?o.text:(chess.turn()==='w'?'White':'Black')+' to move';tn.className='turn'+(o?' over':chess.turn()==='b'?' black':'');
 const p=pair();$('bStatus').textContent=o?(p?(p.result?'Game over. Result is recorded for this match.':'Game over.'):'Game over. Pick a tournament match to record it.'):chess.in_check()?'Check!':sel?`Selected ${sel}. Choose a highlighted square.`:'Select a piece, then a legal destination.';
