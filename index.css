@@ -158,3 +158,22 @@ input::placeholder{color:#7d889f}
 .chk{display:flex;gap:8px;align-items:center;font-size:14px}.chk input{width:18px;height:18px;accent-color:var(--accent)}
 .ro #saveTpl{display:none}.ro #tClock{pointer-events:none}.ro .clockctl{display:none}
 @media(max-width:480px){.twof{grid-template-columns:1fr}.tpl{flex-direction:column;align-items:flex-start}}
+
+/* v1.2 mobile fit: the page must never be wider than the screen */
+html{overflow-x:hidden}body{max-width:100%;overflow-x:clip}.shell{min-height:100dvh}
+.toast{width:max-content;max-width:calc(100vw - 32px);text-align:center}
+@media(max-width:900px){
+  .shell,.two,.boardlay{grid-template-columns:minmax(0,1fr)}
+  .sidebar,.main,.two>*,.boardlay>*{min-width:0;max-width:100%}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+  /* slim top bar with the logo; navigation moves to a thumb-friendly bottom tab bar */
+  .sidebar{padding:10px 14px;flex-wrap:nowrap}
+  .nav{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;background:var(--surface);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom));overflow:visible}
+  .nav button{flex-direction:column;justify-content:center;gap:3px;min-height:54px;padding:6px 2px;font-size:12px;border-radius:10px;white-space:nowrap}
+  .nav button.active{box-shadow:none;background:#1f2540}
+  .main{padding-bottom:calc(88px + env(safe-area-inset-bottom))}
+  .toast{bottom:calc(78px + env(safe-area-inset-bottom))}
+}
+@media(pointer:coarse){.chip button{min-width:40px;min-height:40px}}
