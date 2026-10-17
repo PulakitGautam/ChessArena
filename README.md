@@ -2,7 +2,7 @@
 
 Run chess tournaments from any device. Create Swiss, round robin or knockout events, play games on an interactive board, track live standings, share a link with spectators, and keep going even when the venue has no wifi.
 
-**Live site:** https://chessarena-two.vercel.app
+**Live site:** https://chessarena-v02.vercel.app/
 
 ![Chess Arena home page](docs/screenshots/home.png)
 
