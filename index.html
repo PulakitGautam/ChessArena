@@ -72,7 +72,7 @@ td.x{text-align:center;padding:9px 6px}.rank{color:var(--accent2);font-weight:80
 .pc{width:90%;height:90%;pointer-events:none;filter:drop-shadow(0 2px 1.5px #0005)}
 .pc.w{--f:#fbfaf5;--s:#2a2a30}.pc.b{--f:#4a4a55;--s:#0f0f12}
 .sq:hover{filter:brightness(1.07)}
-.board{border:6px solid #2a2f3f;border-radius:10px}
+.board{border:6px solid #2a2f3f;border-radius:10px;touch-action:none}
 .tools{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:12px}.tools button{font-size:13px}
 .moves{background:#0c1017;border:1px solid #293142;border-radius:10px;padding:10px;min-height:90px;max-height:220px;overflow:auto;font:13px/1.8 ui-monospace,monospace;color:#c6cce0}
 .mrow{display:grid;grid-template-columns:30px 1fr 1fr;gap:7px}.mrow span:first-child{color:#6f7b92}
@@ -101,7 +101,7 @@ tbody tr:hover{background:#1a2030}
 <div class="shell">
 <aside class="sidebar"><div class="brand"><div class="mark"><svg viewBox="0 0 45 45" width="30" height="30" aria-hidden="true" style="--f:#11101c;--s:#11101c"><use href="#n"/></svg></div><div><h1>Jester14 Arena</h1><small>Chess tournament hub</small></div></div>
 <nav class="nav" aria-label="Main"><button class="active" data-view="home">Overview</button><button data-view="tournaments">Tournaments</button><button data-view="boardview">Chessboard</button><button data-view="players">Players</button></nav>
-<div class="sidefoot">Saved on this device · v0.4</div></aside>
+<div class="sidefoot">Saved on this device · v0.5</div></aside>
 <main class="main">
 <div id="libAlert" class="alert" hidden>The chess engine failed to load, so the board is disabled. Check your connection and reload.</div>
 <header class="topbar"><div><div class="eyebrow" id="eyebrow">Your chess HQ</div><h2 id="pageTitle">Welcome to the Arena</h2></div>
@@ -240,14 +240,14 @@ function renderBoard(){const el=$('board');el.innerHTML='';if(!ready)return;
 const files=flip?'hgfedcba':'abcdefgh',ranks=flip?[1,2,3,4,5,6,7,8]:[8,7,6,5,4,3,2,1],hist=chess.history({verbose:true}),lm=hist[hist.length-1];
 ranks.forEach((rk,ri)=>[...files].forEach((f,fi)=>{const sq=f+rk,pc=chess.get(sq),b=document.createElement('button');
 b.className='sq '+((f.charCodeAt(0)-97+rk)%2===0?'dark':'light')+(sel===sq?' sel':'')+(targets.includes(sq)?(pc?' cap':' legal'):'')+(lm&&(lm.from===sq||lm.to===sq)?' last':'');
-b.setAttribute('aria-label',sq+(pc?` ${pc.color==='w'?'white':'black'} ${pc.type}`:''));
+b.dataset.sq=sq;b.setAttribute('aria-label',sq+(pc?` ${pc.color==='w'?'white':'black'} ${pc.type}`:''));
 b.innerHTML=(pc?`<svg class="pc ${pc.color}" viewBox="0 0 45 45" aria-hidden="true"><use href="#${pc.type}"/></svg>`:'')+(fi===0?`<i class="rk">${rk}</i>`:'')+(ri===7?`<i class="fl">${f}</i>`:'');
 b.onclick=()=>clickSq(sq);el.appendChild(b)}));
 const o=overInfo(),tn=$('turn');tn.textContent=o?o.text:(chess.turn()==='w'?'White':'Black')+' to move';tn.className='turn'+(o?' over':chess.turn()==='b'?' black':'');
 const p=pair();$('bStatus').textContent=o?(p?(p.result?'Game over. Result is recorded for this match.':'Game over.'):'Game over. Pick a tournament match to record it.'):chess.in_check()?'Check!':sel?`Selected ${sel}. Choose a highlighted square.`:'Select a piece, then a legal destination.';
 const h=chess.history();let m='';for(let i=0;i<h.length;i+=2)m+=`<div class="mrow"><span>${i/2+1}.</span><span>${esc(h[i])}</span><span>${esc(h[i+1]||'')}</span></div>`;$('moveHist').innerHTML=m||'<span class="muted">No moves yet.</span>';
 $('undo').disabled=!h.length}
-function clickSq(sq){const pc=chess.get(sq);if(sel&&targets.includes(sq)){move(sel,sq);return}
+function clickSq(sq){if(noClick)return;const pc=chess.get(sq);if(sel&&targets.includes(sq)){move(sel,sq);return}
 if(pc&&pc.color===chess.turn()){sel=sq;targets=chess.moves({square:sq,verbose:true}).map(m=>m.to)}else{sel=null;targets=[]}renderBoard()}
 function move(from,to){const ms=chess.moves({square:from,verbose:true}).filter(m=>m.to===to);let promo;
 if(ms.some(m=>m.flags.includes('p'))){promo=(prompt('Promote to (q, r, b or n)?','q')||'q').toLowerCase();if(!'qrbn'.includes(promo))promo='q'}
@@ -292,6 +292,41 @@ $('reset').onclick=()=>{if(confirm('Reset the board to the starting position?'))
 $('play').onclick=typed;$('moveIn').onkeydown=e=>{if(e.key==='Enter')typed()};$('saveMoves').onclick=saveMoves;
 $('copyFen').onclick=()=>copy(chess.fen(),'FEN copied');$('copyPrompt').onclick=copyPrompt;$('dlPgn').onclick=dlPgn;
 $('matchSel').onchange=e=>{const v=e.target.value;if(v==='practice'){match=null;chess=new Chess();sel=null;targets=[];$('bTitle').textContent='Practice board';renderBoard();return}const[t,r,i]=v.split('|');loadMatch(t,+r,+i)};
+/* ---------- Drag and drop (click-to-move still works) ---------- */
+let drag=null,noClick=false;
+const boardEl=$('board');
+boardEl.addEventListener('pointerdown',e=>{
+  if(!ready||e.button>0)return;
+  const el=e.target.closest('.sq');if(!el)return;
+  const sq=el.dataset.sq,pc=chess.get(sq);
+  if(!pc||pc.color!==chess.turn())return;
+  drag={sq,x:e.clientX,y:e.clientY,on:false,id:e.pointerId};
+});
+boardEl.addEventListener('pointermove',e=>{
+  if(!drag)return;
+  if(!drag.on){
+    if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<6)return;
+    drag.on=true;sel=drag.sq;targets=chess.moves({square:sel,verbose:true}).map(m=>m.to);renderBoard();
+    try{boardEl.setPointerCapture(drag.id)}catch(_){}
+    const src=boardEl.querySelector(`[data-sq="${sel}"]`),svg=src.querySelector('.pc'),r=src.getBoundingClientRect();
+    svg.style.opacity='.3';
+    drag.w=r.width*1.08;
+    drag.g=svg.cloneNode(true);
+    drag.g.style.cssText=`position:fixed;left:0;top:0;z-index:50;pointer-events:none;opacity:1;width:${drag.w}px;height:${drag.w}px;filter:drop-shadow(0 8px 10px #0007)`;
+    document.body.appendChild(drag.g);
+  }
+  drag.g.style.transform=`translate(${e.clientX-drag.w/2}px,${e.clientY-drag.w/2}px)`;
+});
+function endDrag(e,commit){
+  if(!drag)return;const d=drag;drag=null;
+  if(!d.on)return;
+  d.g.remove();noClick=true;setTimeout(()=>{noClick=false},0);
+  const to=commit?document.elementFromPoint(e.clientX,e.clientY)?.closest('.sq')?.dataset.sq:null;
+  if(to&&targets.includes(to))move(sel,to);else{sel=null;targets=[];renderBoard()}
+}
+boardEl.addEventListener('pointerup',e=>endDrag(e,true));
+boardEl.addEventListener('pointercancel',e=>endDrag(e,false));
+
 /* ---------- Cloud sync (Supabase) ---------- */
 const SB_URL='https://cwpahhtyfbeibddxftwk.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3cGFoaHR5ZmJlaWJkZHhmdHdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxODQ5MzUsImV4cCI6MjEwNzc2MDkzNX0.ZVJTADxzjO50DAznfLa2nJzmAyVeQAWkUZwc5_8jcHg';
 const sb=(window.supabase&&!SB_URL.includes('YOUR-'))?supabase.createClient(SB_URL,SB_KEY):null;
