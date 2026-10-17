@@ -276,7 +276,7 @@ $('play').onclick=typed;$('moveIn').onkeydown=e=>{if(e.key==='Enter')typed()};$(
 $('copyFen').onclick=()=>copy(chess.fen(),'FEN copied');$('copyPrompt').onclick=copyPrompt;$('dlPgn').onclick=dlPgn;
 $('matchSel').onchange=e=>{const v=e.target.value;if(v==='practice'){match=null;chess=new Chess();sel=null;targets=[];$('bTitle').textContent='Practice board';renderBoard();return}const[t,r,i]=v.split('|');loadMatch(t,+r,+i)};
 /* ---------- Cloud sync (Supabase) ---------- */
-const SB_URL='https://YOUR-PROJECT.supabase.co',SB_KEY='YOUR-ANON-PUBLIC-KEY';
+const SB_URL='https://cwpahhtyfbeibddxftwk.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3cGFoaHR5ZmJlaWJkZHhmdHdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxODQ5MzUsImV4cCI6MjEwNzc2MDkzNX0.ZVJTADxzjO50DAznfLa2nJzmAyVeQAWkUZwc5_8jcHg';
 const sb=(window.supabase&&!SB_URL.includes('YOUR-'))?supabase.createClient(SB_URL,SB_KEY):null;
 let user=null,RO=false,syncT=null;const pushed={};
 const sharedId=new URLSearchParams(location.search).get('t');
