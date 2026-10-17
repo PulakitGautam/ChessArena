@@ -3,7 +3,7 @@ const PC={w:{k:'♔',q:'♕',r:'♖',b:'♗',n:'♘',p:'♙'},b:{k:'♚',q:'♛'
 let data=load(),cur=null,chess=null,sel=null,targets=[],flip=false,match=null,view='home';
 const ready=typeof Chess==='function';chess=ready?new Chess():null;if(!ready)$('libAlert').hidden=false;
 
-function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&Array.isArray(d.tournaments)&&Array.isArray(d.players)){d.tournaments.forEach(t=>{t.withdrawn=t.withdrawn||[];t.rounds.forEach(r=>r.pairings.forEach(p=>{if(p.black==null||p.result==='BYE'){p.bye=true;p.black=null;p.result=null}}))});return d}}catch(e){}return{tournaments:[],players:[]}}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&Array.isArray(d.tournaments)&&Array.isArray(d.players)){d.templates=Array.isArray(d.templates)?d.templates:[];d.tournaments.forEach(t=>{t.withdrawn=t.withdrawn||[];t.rounds.forEach(r=>r.pairings.forEach(p=>{if(p.black==null||p.result==='BYE'){p.bye=true;p.black=null;p.result=null}}))});return d}}catch(e){}return{tournaments:[],players:[],templates:[]}}
 function save(){if(RO){toast('This is a view-only link');return}try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){toast('Could not save. Browser storage may be full or blocked.')}renderAll();queueSync()}
 const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -72,12 +72,12 @@ $('allT').innerHTML=all.map(tCard).join('')||`<div class="empty" style="grid-col
 $('tCount').textContent=`${all.length} event${all.length===1?'':'s'}`;
 $('gList').innerHTML=data.players.map(p=>`<span class="chip">${esc(p.name)}<button data-rm-player="${p.id}" aria-label="Remove ${esc(p.name)}">×</button></span>`).join('')||'<span class="muted">No saved players yet.</span>';
 if(cur&&getT())renderDetail();else if(view==='detail')go('tournaments');
-renderBoard();renderMatchSel()}
+renderBoard();renderMatchSel();renderTpls()}
 
 function renderDetail(){const t=getT();if(!t)return;if(view==='detail')$('pageTitle').textContent=t.name;
-$('dName').textContent=t.name;$('dMeta').textContent=`${FMT[t.format||'swiss']} · Created ${new Date(t.created).toLocaleDateString()}${champ(t)?' · Champion: '+name(champ(t)):''}${RO?' · Live view, refreshes every 15 seconds':''}`;
+$('dName').textContent=t.name;$('dMeta').textContent=`${FMT[t.format||'swiss']}${t.clock&&t.clock!=='off'?' · Clock '+t.clock:''} · Created ${new Date(t.created).toLocaleDateString()}${champ(t)?' · Champion: '+name(champ(t)):''}${RO?' · Live view, refreshes every 15 seconds':''}`;
 $('dRound').textContent=`${t.rounds.length}/${t.maxRounds}`;$('dPlayers').textContent=t.players.length;$('dGames').textContent=games(t);$('dStatus').textContent=t.status==='finished'?'Finished':t.rounds.length?'Active':'Setup';
-const rc=$('roundCount');rc.innerHTML='';for(let i=Math.max(1,t.rounds.length);i<=15;i++)rc.add(new Option(i,i));rc.value=String(t.maxRounds);rc.disabled=(t.format||'swiss')!=='swiss';
+const rc=$('roundCount');rc.innerHTML='';for(let i=Math.max(1,t.rounds.length);i<=15;i++)rc.add(new Option(i,i));rc.value=String(t.maxRounds);rc.disabled=(t.format||'swiss')!=='swiss';$('tClock').value=t.clock||'off';
 $('evPlayers').innerHTML=t.players.map(p=>`<span class="chip ${t.withdrawn.includes(p)?'out':''}">${esc(name(p))}<button data-rm-event="${p}" aria-label="${t.rounds.length?'Withdraw or restore':'Remove'} ${esc(name(p))}">${t.rounds.length?(t.withdrawn.includes(p)?'↺':'⏏'):'×'}</button></span>`).join('')||'<span class="muted">Add players to begin.</span>';
 const rows=standings(t);
 $('standings').innerHTML=rows.length?`<table><thead><tr><th>#</th><th>Player</th><th>Pts</th><th>W</th><th>D</th><th>L</th><th>Buch.</th></tr></thead><tbody>${rows.map((p,i)=>`<tr><td class="rank r${i+1}">${i+1}</td><td>${esc(p.name)}${p.bye?' <span class="pill gold">Bye</span>':''}${p.out?' <span class="pill">Withdrawn</span>':''}</td><td><b>${fmt(p.score)}</b></td><td>${p.w}</td><td>${p.d}</td><td>${p.l}</td><td>${fmt(p.bh)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Standings appear after you add players.</div>';
@@ -108,14 +108,48 @@ function pickPromo(color,cb){let chosen=false;const N={q:'Queen',r:'Rook',b:'Bis
 
 /* actions */
 function addGlobal(n){n=n.trim().slice(0,40);if(!n)return null;let p=data.players.find(x=>x.name.toLowerCase()===n.toLowerCase());if(!p){p={id:uid(),name:n};data.players.push(p)}return p}
-function newTournament(){
+/* tournament templates */
+const BUILTIN=[
+  {id:'b-club',name:'Club night',format:'swiss',maxRounds:5,clock:'10+0',players:[],builtin:true},
+  {id:'b-blitz',name:'Blitz Swiss',format:'swiss',maxRounds:7,clock:'3+2',players:[],builtin:true},
+  {id:'b-rr',name:'Rapid round robin',format:'roundrobin',maxRounds:5,clock:'15+10',players:[],builtin:true},
+  {id:'b-ko',name:'Quick knockout',format:'knockout',maxRounds:5,clock:'5+0',players:[],builtin:true}];
+const tpls=()=>[...BUILTIN,...(data.templates||[])];
+const clockOpts=sel=>`<option value="off"${sel==='off'?' selected':''}>No clock</option>`+Object.keys(TC).filter(k=>k!=='off').map(k=>`<option value="${k}"${sel===k?' selected':''}>${k}</option>`).join('');
+const tplSummary=x=>`${FMT[x.format]||'Swiss system'}${x.format==='swiss'?` · ${x.maxRounds} rounds`:''} · ${x.clock==='off'?'no clock':x.clock}${x.players&&x.players.length?` · ${x.players.length} players`:''}`;
+function renderTpls(){const el=$('tplList');if(!el)return;
+  el.innerHTML=tpls().map(x=>`<div class="tpl"><div><b>${esc(x.name)}</b><small>${esc(tplSummary(x))}${x.builtin?' · built-in':''}</small></div><div class="row"><button type="button" data-use-tpl="${x.id}">Use</button>${x.builtin?'':`<button type="button" class="danger" data-del-tpl="${x.id}">Delete</button>`}</div></div>`).join('')}
+function newTournament(tplId){
   const F=[['swiss','Swiss','Players with similar scores meet each round. Best for larger events.'],['roundrobin','Round robin','Everyone plays everyone once. Best for small groups.'],['knockout','Knockout','Lose and you are out. Quick, with a single champion.']];
+  const T=tpls();let tplPlayers=[];const mine=data.templates||[];
   modal({title:'New tournament',ok:'Create tournament',
-    body:`<div class="field"><label for="fName">Tournament name</label><input type="text" id="fName" name="name" maxlength="60" value="Chess Arena Championship" autocomplete="off"></div><fieldset class="fmts"><legend>Format</legend>${F.map((f,i)=>`<label class="fmt"><input type="radio" name="fmt" value="${f[0]}"${i?'':' checked'}><span><b>${f[1]}</b><small>${f[2]}</small></span></label>`).join('')}</fieldset>`,
-    onOpen(){$('fName').select()},
+    body:`<div class="field"><label for="fName">Tournament name</label><input type="text" id="fName" name="name" maxlength="60" value="Chess Arena Championship" autocomplete="off"></div>
+<div class="field"><label for="fTpl">Start from a template</label><select id="fTpl" name="tpl"><option value="">Blank tournament</option><optgroup label="Built-in">${BUILTIN.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</optgroup>${mine.length?`<optgroup label="Your templates">${mine.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</optgroup>`:''}</select><div class="fhelp" id="fTplNote">A template fills in the format, rounds, clock and players. You can still change everything.</div></div>
+<fieldset class="fmts"><legend>Format</legend>${F.map((f,i)=>`<label class="fmt"><input type="radio" name="fmt" value="${f[0]}"${i?'':' checked'}><span><b>${f[1]}</b><small>${f[2]}</small></span></label>`).join('')}</fieldset>
+<div class="twof" style="margin-top:14px"><div class="field" id="fRoundsWrap"><label for="fRounds">Swiss rounds</label><select id="fRounds" name="rounds">${[3,4,5,6,7,8,9].map(n=>`<option${n===5?' selected':''}>${n}</option>`).join('')}</select></div><div class="field"><label for="fClock">Default clock</label><select id="fClock" name="clock">${clockOpts('off')}</select></div></div>`,
+    onOpen(){
+      const sync=()=>{$('fRoundsWrap').hidden=dform.querySelector('[name=fmt]:checked').value!=='swiss'};
+      dform.querySelectorAll('[name=fmt]').forEach(r=>r.addEventListener('change',sync));
+      const fill=()=>{const x=T.find(y=>y.id===$('fTpl').value);tplPlayers=x?(x.players||[]):[];
+        if(!x){$('fTplNote').textContent='A template fills in the format, rounds, clock and players. You can still change everything.';return}
+        dform.querySelector(`[name=fmt][value="${x.format}"]`).checked=true;$('fRounds').value=String(x.maxRounds||5);$('fClock').value=x.clock||'off';sync();$('fTplNote').textContent=tplSummary(x)};
+      $('fTpl').addEventListener('change',fill);
+      if(tplId){$('fTpl').value=tplId;fill()}else sync();
+      $('fName').select()},
     onSubmit(fd){const n=String(fd.get('name')).trim();if(!n){ferr('fName','Please enter a tournament name');return false}
-      const t={format:fd.get('fmt')||'swiss',id:uid(),name:n,created:new Date().toISOString(),maxRounds:5,status:'setup',players:[],rounds:[],withdrawn:[]};
+      const t={format:fd.get('fmt')||'swiss',id:uid(),name:n,created:new Date().toISOString(),maxRounds:+fd.get('rounds')||5,clock:fd.get('clock')||'off',status:'setup',players:[],rounds:[],withdrawn:[]};
+      tplPlayers.forEach(nm=>{const p=addGlobal(nm);if(p&&!t.players.includes(p.id))t.players.push(p.id)});
       data.tournaments.push(t);cur=t.id;save();go('detail');toast('Tournament created')}})}
+function saveTemplate(){const t=getT();if(!t)return;
+  modal({title:'Save as template',ok:'Save template',
+    body:`<div class="field"><label for="fTn">Template name</label><input type="text" id="fTn" name="name" maxlength="40" value="${esc(t.name)}" autocomplete="off"></div><label class="chk"><input type="checkbox" name="pl" checked> Include the player list (${t.players.length})</label>`,
+    onOpen(){$('fTn').select()},
+    onSubmit(fd){const n=String(fd.get('name')).trim();if(!n){ferr('fTn','Give the template a name');return false}
+      const x={id:uid(),name:n,format:t.format||'swiss',maxRounds:t.maxRounds||5,clock:t.clock||'off',players:fd.get('pl')?t.players.map(name):[]};
+      data.templates=(data.templates||[]).filter(y=>y.name.toLowerCase()!==n.toLowerCase());data.templates.push(x);save();toast('Template saved')}})}
+$('tClock').onchange=e=>{const t=getT();if(t){t.clock=e.target.value;save()}};
+$('saveTpl').onclick=saveTemplate;
+
 function addEvPlayers(){const t=getT();if(!t)return;
   if(t.status==='finished')return toast('Reopen the tournament to add players');
   if(t.rounds.length&&(t.format||'swiss')!=='swiss')return toast('Players cannot be added to this format after Round 1');
@@ -140,7 +174,7 @@ const pair=()=>{if(!match)return null;return data.tournaments.find(t=>t.id===mat
 function overInfo(){if(clock.over)return clock.over;if(!ready||!chess.game_over())return null;if(chess.in_checkmate()){const w=chess.turn()==='w'?'Black':'White';return{res:w==='White'?'1-0':'0-1',text:`Checkmate · ${w} wins`}}
 if(chess.in_stalemate())return{res:'1/2-1/2',text:'Draw by stalemate'};if(chess.insufficient_material())return{res:'1/2-1/2',text:'Draw · insufficient material'};if(chess.in_threefold_repetition())return{res:'1/2-1/2',text:'Draw by repetition'};return{res:'1/2-1/2',text:'Draw · 50-move rule'}}
 function loadMatch(tid,rn,ix){if(!ready)return;const t=data.tournaments.find(x=>x.id===tid),p=t?.rounds.find(r=>r.number===rn)?.pairings[ix];if(!p||p.bye)return;
-cur=tid;match={t:tid,r:rn,i:ix};chess=new Chess();clockReset();if(p.pgn){try{chess.load_pgn(p.pgn)}catch(e){}}sel=null;targets=[];$('bTitle').textContent=`${name(p.white)} vs ${name(p.black)}`;go('boardview');renderBoard();renderMatchSel()}
+cur=tid;match={t:tid,r:rn,i:ix};chess=new Chess();setTcFor(t);clockReset();if(p.pgn){try{chess.load_pgn(p.pgn)}catch(e){}}sel=null;targets=[];$('bTitle').textContent=`${name(p.white)} vs ${name(p.black)}`;go('boardview');renderBoard();renderMatchSel()}
 function renderMatchSel(){const s=$('matchSel');let o='<option value="practice">Practice board (not a tournament game)</option>';
 data.tournaments.forEach(t=>t.rounds.forEach(r=>r.pairings.forEach((p,i)=>{if(!p.bye)o+=`<option value="${t.id}|${r.number}|${i}">${esc(t.name)} · R${r.number}: ${esc(name(p.white))} vs ${esc(name(p.black))}${p.result?' ✓':''}</option>`})));
 s.innerHTML=o;s.value=match?`${match.t}|${match.r}|${match.i}`:'practice';if(match&&s.value!==`${match.t}|${match.r}|${match.i}`){match=null;s.value='practice'}}
@@ -157,13 +191,13 @@ const h=chess.history();let m='';for(let i=0;i<h.length;i+=2)m+=`<div class="mro
 $('undo').disabled=!h.length}
 function clickSq(sq){if(noClick)return;const pc=chess.get(sq);if(sel&&targets.includes(sq)){move(sel,sq);return}
 if(pc&&pc.color===chess.turn()){sel=sq;targets=chess.moves({square:sq,verbose:true}).map(m=>m.to)}else{sel=null;targets=[]}renderBoard()}
-function move(from,to){if(clock.over)return toast(clock.over.text);if(AI.on&&AI.busy)return toast('The AI is thinking');const ms=chess.moves({square:from,verbose:true}).filter(m=>m.to===to);
+function move(from,to){if(clock.over)return toast(clock.over.text);if(clock.paused)return toast('The clock is paused. Resume to keep playing.');if(AI.on&&AI.busy)return toast('The AI is thinking');const ms=chess.moves({square:from,verbose:true}).filter(m=>m.to===to);
 if(ms.some(m=>m.flags.includes('p')))return pickPromo(chess.turn(),pr=>doMove(from,to,pr));
 doMove(from,to)}
 function doMove(from,to,promo){const m=chess.move({from,to,promotion:promo});if(!m)return toast('That move is not legal');after()}
 function after(){clockMove();sel=null;targets=[];renderBoard();finish(overInfo());if(AI.on&&!overInfo())setTimeout(aiStep,Math.max(50,(+$('aiDelay').value||0)*1000))}
 function finish(o){if(!o)return;const p=pair();if(p&&!p.result){if(isKO()&&o.res==='1/2-1/2')return toast('Drawn. '+KODRAW);p.pgn=chess.pgn();p.result=o.res;save();toast(o.text+' · result recorded')}else toast(o.text)}
-function typed(){const v=$('moveIn').value.trim();if(!v||!ready)return;if(clock.over)return toast(clock.over.text);if(AI.on&&AI.busy)return toast('The AI is thinking');let m=null;
+function typed(){const v=$('moveIn').value.trim();if(!v||!ready)return;if(clock.over)return toast(clock.over.text);if(clock.paused)return toast('The clock is paused. Resume to keep playing.');if(AI.on&&AI.busy)return toast('The AI is thinking');let m=null;
 if(/^[a-h][1-8][a-h][1-8][qrbn]?$/i.test(v)){const l=v.toLowerCase();m=chess.move({from:l.slice(0,2),to:l.slice(2,4),promotion:l[4]||'q'})}else m=chess.move(v,{sloppy:true});
 if(!m)return toast('Move not recognised or illegal');$('moveIn').value='';after()}
 function saveMoves(){const p=pair();if(!p)return toast('Choose a tournament match first');p.pgn=chess.pgn();const o=overInfo();if(o&&!p.result)p.result=o.res;save();toast('Moves saved to match')}
@@ -187,6 +221,8 @@ if(x=g('[data-score]')){const[a,b,...c]=x.dataset.score.split(':');return scoreM
 if(x=g('[data-play]')){const[a,b]=x.dataset.play.split(':');return loadMatch(cur,+a,+b)}
 if(x=g('[data-rm-player]'))return rmGlobal(x.dataset.rmPlayer);
 if(x=g('[data-rm-event]'))return rmEvPlayer(x.dataset.rmEvent);
+if(x=g('[data-use-tpl]'))return newTournament(x.dataset.useTpl);
+if(x=g('[data-del-tpl]')){const id=x.dataset.delTpl,tp=(data.templates||[]).find(y=>y.id===id);if(tp)ask('Delete template',`Delete the template "${tp.name}"?`,'Delete',()=>{data.templates=data.templates.filter(y=>y.id!==id);save()});return}
 if(x=g('[data-result]'))return setResult(x.dataset.result)});
 $('newT').onclick=$('heroNew').onclick=newTournament;$('heroDemo').onclick=loadDemo;
 $('exportBtn').onclick=()=>{dl(JSON.stringify(data,null,2),'jester14-arena-backup.json','application/json');toast('Backup exported')};
@@ -253,31 +289,42 @@ $('aiStart').onclick=()=>{
 $('aiForget').onclick=()=>{$('aiWk').value=$('aiBk').value='';$('aiPanel').dispatchEvent(new Event('input'));toast('Keys cleared from this device')};
 
 /* ---------- Chess clock ---------- */
-const clock={on:false,base:0,inc:0,w:0,b:0,run:null,last:0,started:false,over:null,t:null};
+const clock={on:false,base:0,inc:0,w:0,b:0,run:null,last:0,started:false,over:null,t:null,paused:null};
 const TC={off:null,'1+0':[60,0],'3+0':[180,0],'3+2':[180,2],'5+0':[300,0],'5+3':[300,3],'10+0':[600,0],'10+5':[600,5],'15+10':[900,10],'30+0':[1800,0]};
 const left=c=>clock[c]-(clock.run===c?Date.now()-clock.last:0);
 const fmtC=ms=>{ms=Math.max(0,ms);if(ms<20000)return(ms/1000).toFixed(1);const s=Math.ceil(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
-function clockReset(){aiStop();const v=TC[$('tc').value];clearInterval(clock.t);clock.on=!!v;clock.base=v?v[0]*1000:0;clock.inc=v?v[1]*1000:0;clock.w=clock.b=clock.base;clock.run=null;clock.started=false;clock.over=null;drawClock()}
-function clockPause(){aiStop();if(clock.run){clock[clock.run]=left(clock.run);clock.run=null}clearInterval(clock.t);clock.started=false;clock.over=null;drawClock()}
-function drawClock(){const box=document.querySelector('.clocks');box.hidden=!clock.on;if(!clock.on)return;
+function clockReset(){aiStop();const v=TC[$('tc').value];clearInterval(clock.t);clock.on=!!v;clock.base=v?v[0]*1000:0;clock.inc=v?v[1]*1000:0;clock.w=clock.b=clock.base;clock.run=null;clock.paused=null;clock.started=false;clock.over=null;drawClock()}
+function clockPause(){aiStop();if(clock.run){clock[clock.run]=left(clock.run);clock.run=null}clearInterval(clock.t);clock.paused=null;clock.started=false;clock.over=null;drawClock()}
+function drawClock(){const box=document.querySelector('.clocks');box.hidden=!clock.on;$('clockCtl').hidden=!clock.on;if(!clock.on)return;$('clkPause').textContent=clock.paused?'Resume':'Pause';$('clkPause').disabled=!(clock.run||clock.paused);
 $('clkB').style.order=flip?2:0;$('clkW').style.order=flip?0:2;
 for(const c of['w','b']){const el=$(c==='w'?'clkW':'clkB'),ms=left(c);el.textContent=(c==='w'?'White ':'Black ')+fmtC(ms);
-el.classList.toggle('run',clock.run===c);el.classList.toggle('low',ms<10000&&ms>0);el.classList.toggle('flag',!!clock.over&&clock.over.flag===c)}}
+el.classList.toggle('run',clock.run===c);el.classList.toggle('paused',!!clock.paused);el.classList.toggle('low',ms<10000&&ms>0);el.classList.toggle('flag',!!clock.over&&clock.over.flag===c)}}
 function tick(){if(clock.run&&!clock.over&&left(clock.run)<=0){const loser=clock.run;clock[loser]=0;clock.run=null;clearInterval(clock.t);
 clock.over={res:loser==='w'?'0-1':'1-0',text:`${loser==='w'?'White':'Black'} lost on time`,flag:loser};renderBoard();finish(clock.over)}drawClock()}
-function clockMove(){if(!clock.on||clock.over)return;const mover=chess.turn()==='w'?'b':'w';
+function clockMove(){if(!clock.on||clock.over||clock.paused)return;const mover=chess.turn()==='w'?'b':'w';
 if(clock.run===mover)clock[mover]=left(mover)+clock.inc;
 clock.started=true;clearInterval(clock.t);
 if(chess.game_over()){clock.run=null}else{clock.run=chess.turn();clock.last=Date.now();clock.t=setInterval(tick,100)}
 drawClock()}
-$('tc').onchange=()=>{clockReset();if(chess.history().length)toast('Clock set. It starts on the next move.')};
+function clockHold(){if(!clock.on||clock.over||!clock.run)return;aiStop();clock[clock.run]=left(clock.run);clock.paused=clock.run;clock.run=null;clearInterval(clock.t);drawClock()}
+function clockResume(){if(!clock.paused)return;clock.run=clock.paused;clock.paused=null;clock.last=Date.now();clearInterval(clock.t);clock.t=setInterval(tick,100);drawClock()}
+function clockAdjust(c,ms){if(!clock.on)return;if(clock.over)return toast('The game is over');clock[c]=Math.max(1000,left(c)+ms);if(clock.run===c)clock.last=Date.now();drawClock();toast(`${c==='w'?'White':'Black'} ${ms>0?'+':'−'}1 minute`)}
+$('clkPause').onclick=()=>clock.paused?clockResume():clockHold();
+$('clockCtl').addEventListener('click',e=>{const b=e.target.closest('[data-adj]');if(!b)return;const[c,v]=b.dataset.adj.split(':');clockAdjust(c,+v)});
+let tcPrev=$('tc').value;
+function setTcFor(t){const v=(t&&t.clock)||'off';$('tc').value=[...$('tc').options].some(o=>o.value===v)?v:'off';tcPrev=$('tc').value}
+$('tc').onchange=()=>{const v=$('tc').value;
+  if(clock.on&&chess.history().length&&!clock.over){
+    dlg.addEventListener('close',()=>{if($('tc').value!==tcPrev)$('tc').value=tcPrev},{once:true});
+    ask('Change the time control?','This resets both clocks to the new time. The game itself carries on.','Reset clocks',()=>{tcPrev=v;clockReset();toast('Clocks reset. They start again on the next move.')},false);return}
+  tcPrev=v;clockReset();if(chess.history().length)toast('Clock set. It starts on the next move.')};
 clockReset();
 
 /* ---------- Drag and drop (click-to-move still works) ---------- */
 let drag=null,noClick=false;
 const boardEl=$('board');
 boardEl.addEventListener('pointerdown',e=>{
-  if(!ready||e.button>0||clock.over)return;
+  if(!ready||e.button>0||clock.over||clock.paused)return;
   const el=e.target.closest('.sq');if(!el)return;
   const sq=el.dataset.sq,pc=chess.get(sq);
   if(!pc||pc.color!==chess.turn())return;
