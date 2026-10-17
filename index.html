@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#10131b">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0a0c12"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Chess Arena"><meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="description" content="Run Swiss chess tournaments, track standings and play games on an interactive board.">
-<title>Jester14 Chess Arena</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>♞</text></svg>">
+<title>Chess Arena</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="icon" href="icon-192.png" type="image/png" sizes="192x192">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 <script>window.Chess||document.write('<script src="https://cdn.jsdelivr.net/npm/chess.js@0.10.3/chess.min.js"><\/script>')</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -103,6 +103,8 @@ tbody tr:hover{background:#1a2030}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 .ro #newT,.ro #heroNew,.ro #heroDemo,.ro #importBtn,.ro #exportBtn,.ro #authBtn,.ro #addEv,.ro #genRound,.ro #rename,.ro #delT,.ro #finish,.ro #reopen,.ro #shareBtn,.ro #saveMoves,.ro .results,.ro [data-score],.ro [data-rm-event],.ro [data-rm-player]{display:none}
 .ro #roundCount{pointer-events:none}
+[hidden]{display:none!important}
+.net{background:#3a3020;color:#ffda8b;padding:7px 12px;border-radius:99px;font-size:13px;font-weight:600}
 /* modal forms */
 dialog{border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--text);padding:0;width:min(520px,calc(100vw - 32px));box-shadow:0 30px 80px #000a}
 dialog::backdrop{background:rgba(5,7,12,.62);backdrop-filter:blur(3px)}
@@ -158,13 +160,13 @@ input::placeholder{color:#7d889f}
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="p" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><circle cx="22.5" cy="13" r="5.5"/><path d="M17.5 21h10l-1.5 4c3.5 2.5 5.5 6.5 5.5 11h-19c0-4.5 2-8.5 5.5-11z"/><path d="M11.5 36h22v3.5h-22z"/></g></symbol><symbol id="r" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><path d="M12 39h21v-3.5H12z"/><path d="M14 35.5l1.5-4h14l1.5 4z"/><path d="M15.5 31.5V20h14v11.5z"/><path d="M12.5 20v-7.5H17V15h3.5v-2.5h4V15H28v-2.5h4.5V20z"/></g></symbol><symbol id="n" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><path d="M11 39C10.5 29 14 24 19.5 20C16.5 19.5 14.5 17.5 14.5 14.5L22 6L23.5 8.5C32 9 38 15.5 37.5 25C37.5 31 37 35 37 39Z"/><path d="M26 11C31 14 33 19 33 25" style="fill:none"/><circle cx="21" cy="14" r="1.3" style="fill:var(--s)"/></g></symbol><symbol id="b" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><circle cx="22.5" cy="8.5" r="3.2"/><path d="M22.5 12C28 16 31 21 28 27H17C14 21 17 16 22.5 12z"/><path d="M15 27h15v4H15z"/><path d="M12 31h21l1.5 8h-24z"/><path d="M20 20h5M22.5 17.5v5" style="fill:none"/></g></symbol><symbol id="q" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><path d="M9 14L13 26L16 11L19.5 24L22.5 9L25.5 24L29 11L32 26L36 14L31 33H14Z"/><path d="M12 33h21v6H12z"/><circle cx="9" cy="13" r="2"/><circle cx="16" cy="10" r="2"/><circle cx="22.5" cy="8" r="2"/><circle cx="29" cy="10" r="2"/><circle cx="36" cy="13" r="2"/></g></symbol><symbol id="k" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><path d="M22.5 14C17 10 8.5 14 11.5 22L14.5 33h16L33.5 22C36.5 14 28 10 22.5 14z"/><path d="M12 33h21v6H12z"/><path d="M22.5 4.5v9.5M18.5 8.5h8" style="fill:none"/></g></symbol></defs></svg>
 <a class="skip" href="#main">Skip to main content</a>
 <div class="shell">
-<aside class="sidebar"><div class="brand"><div class="mark"><svg viewBox="0 0 45 45" width="30" height="30" aria-hidden="true" style="--f:#11101c;--s:#11101c"><use href="#n"/></svg></div><div><h1>Jester14 Arena</h1><small>Chess tournament hub</small></div></div>
+<aside class="sidebar"><div class="brand"><div class="mark"><svg viewBox="0 0 45 45" width="30" height="30" aria-hidden="true" style="--f:#11101c;--s:#11101c"><use href="#n"/></svg></div><div><h1>Chess Arena</h1><small>Chess tournament hub</small></div></div>
 <nav class="nav" aria-label="Main"><button class="active" data-view="home"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Overview</button><button data-view="tournaments"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>Tournaments</button><button data-view="boardview"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18M12 3v18"/></svg>Chessboard</button><button data-view="players"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5 6.5-5s6.5 1.5 6.5 5"/><path d="M16 5a3.5 3.5 0 0 1 0 7M18 15c2.5.5 3.5 2.5 3.5 5"/></svg>Players</button></nav>
-<div class="sidefoot">Saved on this device · v0.10</div></aside>
+<div class="sidefoot">Saved on this device · v1.0</div></aside>
 <main class="main" id="main" tabindex="-1">
 <div id="libAlert" class="alert" hidden>The chess engine failed to load, so the board is disabled. Check your connection and reload.</div>
 <header class="topbar"><div><div class="eyebrow" id="eyebrow">Your chess HQ</div><h2 id="pageTitle">Welcome to the Arena</h2></div>
-<div class="row"><button class="quiet" id="authBtn">Sign in with GitHub</button><button class="quiet" id="exportBtn">Export data</button><button class="quiet" id="importBtn">Import data</button><input type="file" id="importFile" accept=".json,application/json" hidden><button class="primary" id="newT"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New tournament</button></div></header>
+<div class="row"><span class="net" id="netBadge" role="status" hidden>Offline · saved on this device</span><button class="quiet" id="installBtn" hidden>Install app</button><button class="quiet" id="authBtn">Sign in with GitHub</button><button class="quiet" id="exportBtn">Export data</button><button class="quiet" id="importBtn">Import data</button><input type="file" id="importFile" accept=".json,application/json" hidden><button class="primary" id="newT"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New tournament</button></div></header>
 
 <section class="view active" id="view-home">
 <div class="hero"><div><h3>Every tournament. One arena.</h3><p>Create Swiss events, generate pairings, and play or record games on an interactive board. Built for AI showdowns and human tournaments alike.</p><div class="row"><button class="primary" id="heroNew">Create a tournament</button><button id="heroDemo">Load demo tournament</button></div></div><svg class="big heroknight" viewBox="0 0 45 45" aria-hidden="true"><use href="#n"/></svg></div>
@@ -176,7 +178,7 @@ input::placeholder{color:#7d889f}
 <section class="view" id="view-tournaments"><div class="head" style="margin-top:0"><h3>All tournaments</h3><span class="muted" id="tCount"></span></div><div id="allT" class="cards"></div></section>
 
 <section class="view" id="view-players"><div class="two"><div class="panel"><h3>Player directory</h3><p class="muted">Names saved here can be added to any tournament.</p><div class="inline"><input type="text" id="gName" placeholder="Player or AI name" maxlength="40" aria-label="Player name"><button class="primary" id="gAdd">Add player</button></div><div id="gList" class="chips"></div></div>
-<div class="panel"><h3>Where your data lives</h3><p class="muted">Data is saved in this browser. Sign in with GitHub to sync across devices and share live links. Use Export data to back up, and Import data to restore.</p></div></div></section>
+<div class="panel"><h3>Where your data lives</h3><p class="muted">Data is saved in this browser and works offline once the app has loaded. Install it from your browser menu (on iPhone: Share, then Add to Home Screen). Sign in with GitHub to sync across devices and share live links. Use Export data to back up, and Import data to restore.</p></div></div></section>
 
 <section class="view" id="view-detail">
 <div class="head" style="margin-top:0"><div><button class="quiet" data-view="tournaments">← Tournaments</button><h3 id="dName" style="margin:10px 0 4px;font-size:23px"></h3><div id="dMeta" class="muted"></div></div><div class="row"><button id="shareBtn">Share link</button><button id="rename">Rename</button><button class="danger" id="delT">Delete</button></div></div>
@@ -327,7 +329,7 @@ function addGlobal(n){n=n.trim().slice(0,40);if(!n)return null;let p=data.player
 function newTournament(){
   const F=[['swiss','Swiss','Players with similar scores meet each round. Best for larger events.'],['roundrobin','Round robin','Everyone plays everyone once. Best for small groups.'],['knockout','Knockout','Lose and you are out. Quick, with a single champion.']];
   modal({title:'New tournament',ok:'Create tournament',
-    body:`<div class="field"><label for="fName">Tournament name</label><input type="text" id="fName" name="name" maxlength="60" value="Jester14 Chess Championship" autocomplete="off"></div><fieldset class="fmts"><legend>Format</legend>${F.map((f,i)=>`<label class="fmt"><input type="radio" name="fmt" value="${f[0]}"${i?'':' checked'}><span><b>${f[1]}</b><small>${f[2]}</small></span></label>`).join('')}</fieldset>`,
+    body:`<div class="field"><label for="fName">Tournament name</label><input type="text" id="fName" name="name" maxlength="60" value="Chess Arena Championship" autocomplete="off"></div><fieldset class="fmts"><legend>Format</legend>${F.map((f,i)=>`<label class="fmt"><input type="radio" name="fmt" value="${f[0]}"${i?'':' checked'}><span><b>${f[1]}</b><small>${f[2]}</small></span></label>`).join('')}</fieldset>`,
     onOpen(){$('fName').select()},
     onSubmit(fd){const n=String(fd.get('name')).trim();if(!n){ferr('fName','Please enter a tournament name');return false}
       const t={format:fd.get('fmt')||'swiss',id:uid(),name:n,created:new Date().toISOString(),maxRounds:5,status:'setup',players:[],rounds:[],withdrawn:[]};
@@ -390,7 +392,7 @@ function copy(text,msg){
 function copyPrompt(){const s=chess.turn()==='w'?'White':'Black';copy(`You are playing a legal game of standard chess as ${s}. Return exactly ONE move in SAN notation (for example Nf3, exd5, O-O, or e8=Q), with no explanation. Choose a strong move.\nCurrent position (FEN): ${chess.fen()}\nMoves so far (PGN): ${chess.pgn()||'(none)'}\nYour move:`,'AI prompt copied')}
 function dl(text,file,type){const a=document.createElement('a'),u=URL.createObjectURL(new Blob([text],{type}));a.href=u;a.download=file;a.click();URL.revokeObjectURL(u)}
 function dlPgn(){if(!chess.history().length)return toast('No moves to export yet');const c=new Chess();c.load_pgn(chess.pgn());const p=pair(),t=match&&data.tournaments.find(x=>x.id===match.t),o=overInfo();
-c.header('Event',t?t.name:'Practice game','Site','Jester14 Chess Arena','Date',new Date().toISOString().slice(0,10).replace(/-/g,'.'),'Round',p?String(match.r):'-','White',p?name(p.white):'White','Black',p?name(p.black):'Black','Result',(p&&p.result)||(o?o.res:'*'));
+c.header('Event',t?t.name:'Practice game','Site','Chess Arena','Date',new Date().toISOString().slice(0,10).replace(/-/g,'.'),'Round',p?String(match.r):'-','White',p?name(p.white):'White','Black',p?name(p.black):'Black','Result',(p&&p.result)||(o?o.res:'*'));
 dl(c.pgn(),'jester14-game.pgn','application/x-chess-pgn');toast('PGN downloaded')}
 function importData(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.tournaments)||!Array.isArray(d.players))throw 0;
 return ask('Import backup',`Import ${d.tournaments.length} tournament(s) and ${d.players.length} player(s)? This replaces all data on this device.`,'Replace my data',()=>{localStorage.setItem(KEY,JSON.stringify(d));data=load();cur=null;match=null;if(ready)chess=new Chess();save();go('home');toast('Backup imported')})}catch(e){toast('That file is not a valid Arena backup')}};r.readAsText(f)}
@@ -530,7 +532,7 @@ const sb=(window.supabase&&!SB_URL.includes('YOUR-'))?supabase.createClient(SB_U
 let user=null,RO=false,syncT=null;const pushed={};
 const sharedId=new URLSearchParams(location.search).get('t');
 const sig=t=>JSON.stringify({...t,rev:0});
-function queueSync(){if(!sb||!user||RO)return;clearTimeout(syncT);syncT=setTimeout(push,900)}
+function queueSync(){if(!sb||!user||RO||!navigator.onLine)return;clearTimeout(syncT);syncT=setTimeout(push,900)}
 async function push(){
   const rows=[];
   for(const t of data.tournaments){
@@ -580,10 +582,20 @@ async function loadShared(){
   if(!sb){RO=false;document.body.classList.remove('ro');toast('Cloud sync is not configured');return renderAll()}
   const fetchIt=async()=>{
     const{data:row,error}=await sb.from('tournaments').select('data').eq('id',sharedId).maybeSingle();
-    if(error||!row){toast('Tournament not found');return false}
+    if(error||!row){toast(navigator.onLine?'Tournament not found':'You are offline. Live links need an internet connection.');return false}
     const t=row.data;
     data={tournaments:[t],players:Object.entries(t.names||{}).map(([id,n])=>({id,name:n}))};cur=t.id;renderAll();return true};
   if(await fetchIt()){go('detail');setInterval(fetchIt,15000)}else{renderAll();go('home')}
 }
+/* ---------- Offline and install ---------- */
+function netUI(){$('netBadge').hidden=navigator.onLine}
+addEventListener('offline',()=>{netUI();toast('You are offline. Everything is saved on this device.')});
+addEventListener('online',()=>{netUI();toast('Back online');if(sb&&user&&!RO)push()});
+netUI();
+let installEv=null;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEv=e;$('installBtn').hidden=false});
+$('installBtn').onclick=async()=>{if(!installEv)return;installEv.prompt();await installEv.userChoice;installEv=null;$('installBtn').hidden=true};
+addEventListener('appinstalled',()=>{$('installBtn').hidden=true;toast('App installed')});
+if('serviceWorker' in navigator&&location.protocol!=='file:')addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 if(sharedId)loadShared();else{renderAll();initAuth()}
 </script></body></html>
