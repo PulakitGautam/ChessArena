@@ -2,7 +2,7 @@
 
 Run chess tournaments from any device. Create Swiss, round robin or knockout events, play games on an interactive board, track live standings, share a link with spectators, and keep going even when the venue has no wifi.
 
-**Live site:** https://chessarena-v02.vercel.app/
+**Live site:** https://chessarena-v02.vercel.app
 
 ![Chess Arena home page](docs/screenshots/home.png)
 
@@ -45,7 +45,7 @@ Run chess tournaments from any device. Create Swiss, round robin or knockout eve
 
 ## Tech stack
 
-- Plain HTML, CSS and JavaScript in a single `index.html`, with no build step.
+- Plain HTML, CSS and JavaScript split into `index.html`, `index.css` and `index.js`, with no framework and no build step.
 - [chess.js](https://github.com/jhlywa/chess.js) 0.10.3 for move rules.
 - [Supabase](https://supabase.com) for sign-in (GitHub) and one database table.
 - A service worker and web app manifest for the offline app.
@@ -55,7 +55,9 @@ Run chess tournaments from any device. Create Swiss, round robin or knockout eve
 
 | File | Purpose |
 |---|---|
-| `index.html` | The whole app |
+| `index.html` | Page structure and markup |
+| `index.css` | All styling |
+| `index.js` | All app logic (tournaments, board, clock, AI mode, sync, offline) |
 | `sw.js` | Service worker for offline use |
 | `manifest.json` | Install details for the app |
 | `icon*.png`, `icon.svg`, `apple-touch-icon.png` | App icons |
@@ -93,13 +95,13 @@ create policy "owner can delete" on tournaments for delete using (auth.uid() = o
 
 3. Register a **GitHub OAuth App** (GitHub, Settings, Developer settings, OAuth Apps). Set the callback URL to the one shown in Supabase under **Authentication, Sign In / Providers, GitHub**, then paste the Client ID and secret into Supabase and enable the provider.
 4. In Supabase **Authentication, URL Configuration**, set the **Site URL** to your own site address.
-5. Near the bottom of `index.html`, set your project values:
+5. Near the bottom of `index.js`, set your project values:
 
 ```js
 const SB_URL='https://YOUR-PROJECT.supabase.co',SB_KEY='YOUR-ANON-PUBLIC-KEY';
 ```
 
-The anon key is designed to be public because the database rules above control who can write. **Never** put the `service_role` or secret key in this file.
+The anon key is designed to be public because the database rules above control who can write. **Never** put the `service_role` or secret key in this file or anywhere in the repo.
 
 ## Good to know
 
