@@ -73,6 +73,9 @@ td.x{text-align:center;padding:9px 6px}.rank{color:var(--accent2);font-weight:80
 .pc.w{--f:#fbfaf5;--s:#2a2a30}.pc.b{--f:#4a4a55;--s:#0f0f12}
 .sq:hover{filter:brightness(1.07)}
 .board{border:6px solid #2a2f3f;border-radius:10px;touch-action:none}
+.clocks{display:flex;gap:8px;margin-bottom:10px}.clocks[hidden]{display:none}
+.clk{flex:1;text-align:center;font:700 20px/1 ui-monospace,monospace;padding:11px 8px;border-radius:10px;background:#0c1017;border:1px solid #293142;color:#aab2c6}
+.clk.run{border-color:var(--accent);background:#22243a;color:#fff}.clk.low{color:#ff9aa5}.clk.flag{background:#3a2025;border-color:#7a3a45;color:#ffb4bb}
 .tools{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:12px}.tools button{font-size:13px}
 .moves{background:#0c1017;border:1px solid #293142;border-radius:10px;padding:10px;min-height:90px;max-height:220px;overflow:auto;font:13px/1.8 ui-monospace,monospace;color:#c6cce0}
 .mrow{display:grid;grid-template-columns:30px 1fr 1fr;gap:7px}.mrow span:first-child{color:#6f7b92}
@@ -101,7 +104,7 @@ tbody tr:hover{background:#1a2030}
 <div class="shell">
 <aside class="sidebar"><div class="brand"><div class="mark"><svg viewBox="0 0 45 45" width="30" height="30" aria-hidden="true" style="--f:#11101c;--s:#11101c"><use href="#n"/></svg></div><div><h1>Jester14 Arena</h1><small>Chess tournament hub</small></div></div>
 <nav class="nav" aria-label="Main"><button class="active" data-view="home">Overview</button><button data-view="tournaments">Tournaments</button><button data-view="boardview">Chessboard</button><button data-view="players">Players</button></nav>
-<div class="sidefoot">Saved on this device · v0.5</div></aside>
+<div class="sidefoot">Saved on this device · v0.6</div></aside>
 <main class="main">
 <div id="libAlert" class="alert" hidden>The chess engine failed to load, so the board is disabled. Check your connection and reload.</div>
 <header class="topbar"><div><div class="eyebrow" id="eyebrow">Your chess HQ</div><h2 id="pageTitle">Welcome to the Arena</h2></div>
@@ -130,10 +133,12 @@ tbody tr:hover{background:#1a2030}
 
 <section class="view" id="view-boardview"><div class="boardlay"><div class="bpanel">
 <div class="btop"><div><div class="eyebrow">Live position</div><strong id="bTitle">Practice board</strong></div><span class="turn" id="turn">White to move</span></div>
+<div class="clocks" hidden><div id="clkB" class="clk">Black</div><div id="clkW" class="clk">White</div></div>
 <div id="board" class="board" aria-label="Chessboard"></div>
 <div class="tools"><div class="row"><button id="flip">⇅ Flip</button><button id="undo">↶ Undo</button><button id="reset">Reset</button></div><button id="saveMoves" class="primary">Save moves to match</button></div>
 <div class="status" id="bStatus" aria-live="polite"></div></div>
 <div><div class="panel"><h3>Game details</h3><div class="field"><label for="matchSel">Playing in</label><select id="matchSel"></select></div>
+<div class="field"><label for="tc">Chess clock (minutes + seconds per move)</label><select id="tc"><option value="off">Off</option><option value="1+0">1+0</option><option value="3+0">3+0</option><option value="3+2">3+2</option><option value="5+0">5+0</option><option value="5+3">5+3</option><option value="10+0">10+0</option><option value="10+5">10+5</option><option value="15+10">15+10</option><option value="30+0">30+0</option></select></div>
 <div class="field"><label for="moveIn">Move input (SAN or UCI)</label><div class="row"><input type="text" id="moveIn" placeholder="e.g. Nf3 or e2e4" style="flex:1;min-width:0"><button id="play" class="primary">Play</button></div></div>
 <p class="hint">Click a piece then a square, or type a move. Games that end by mate or draw are recorded automatically in tournament matches.</p>
 <div class="head"><h3>Move history</h3><div class="row"><button id="copyFen">Copy FEN</button><button id="dlPgn">Download PGN</button></div></div><div id="moveHist" class="moves"></div>
@@ -229,10 +234,10 @@ const res=['1-0','1/2-1/2','0-1'];for(let i=0;i<2;i++){genRound(t);t.rounds[t.ro
 
 /* board */
 const pair=()=>{if(!match)return null;return data.tournaments.find(t=>t.id===match.t)?.rounds.find(r=>r.number===match.r)?.pairings[match.i]||null};
-function overInfo(){if(!ready||!chess.game_over())return null;if(chess.in_checkmate()){const w=chess.turn()==='w'?'Black':'White';return{res:w==='White'?'1-0':'0-1',text:`Checkmate · ${w} wins`}}
+function overInfo(){if(clock.over)return clock.over;if(!ready||!chess.game_over())return null;if(chess.in_checkmate()){const w=chess.turn()==='w'?'Black':'White';return{res:w==='White'?'1-0':'0-1',text:`Checkmate · ${w} wins`}}
 if(chess.in_stalemate())return{res:'1/2-1/2',text:'Draw by stalemate'};if(chess.insufficient_material())return{res:'1/2-1/2',text:'Draw · insufficient material'};if(chess.in_threefold_repetition())return{res:'1/2-1/2',text:'Draw by repetition'};return{res:'1/2-1/2',text:'Draw · 50-move rule'}}
 function loadMatch(tid,rn,ix){if(!ready)return;const t=data.tournaments.find(x=>x.id===tid),p=t?.rounds.find(r=>r.number===rn)?.pairings[ix];if(!p||p.bye)return;
-cur=tid;match={t:tid,r:rn,i:ix};chess=new Chess();if(p.pgn){try{chess.load_pgn(p.pgn)}catch(e){}}sel=null;targets=[];$('bTitle').textContent=`${name(p.white)} vs ${name(p.black)}`;go('boardview');renderBoard();renderMatchSel()}
+cur=tid;match={t:tid,r:rn,i:ix};chess=new Chess();clockReset();if(p.pgn){try{chess.load_pgn(p.pgn)}catch(e){}}sel=null;targets=[];$('bTitle').textContent=`${name(p.white)} vs ${name(p.black)}`;go('boardview');renderBoard();renderMatchSel()}
 function renderMatchSel(){const s=$('matchSel');let o='<option value="practice">Practice board (not a tournament game)</option>';
 data.tournaments.forEach(t=>t.rounds.forEach(r=>r.pairings.forEach((p,i)=>{if(!p.bye)o+=`<option value="${t.id}|${r.number}|${i}">${esc(t.name)} · R${r.number}: ${esc(name(p.white))} vs ${esc(name(p.black))}${p.result?' ✓':''}</option>`})));
 s.innerHTML=o;s.value=match?`${match.t}|${match.r}|${match.i}`:'practice';if(match&&s.value!==`${match.t}|${match.r}|${match.i}`){match=null;s.value='practice'}}
@@ -249,12 +254,12 @@ const h=chess.history();let m='';for(let i=0;i<h.length;i+=2)m+=`<div class="mro
 $('undo').disabled=!h.length}
 function clickSq(sq){if(noClick)return;const pc=chess.get(sq);if(sel&&targets.includes(sq)){move(sel,sq);return}
 if(pc&&pc.color===chess.turn()){sel=sq;targets=chess.moves({square:sq,verbose:true}).map(m=>m.to)}else{sel=null;targets=[]}renderBoard()}
-function move(from,to){const ms=chess.moves({square:from,verbose:true}).filter(m=>m.to===to);let promo;
+function move(from,to){if(clock.over)return toast(clock.over.text);const ms=chess.moves({square:from,verbose:true}).filter(m=>m.to===to);let promo;
 if(ms.some(m=>m.flags.includes('p'))){promo=(prompt('Promote to (q, r, b or n)?','q')||'q').toLowerCase();if(!'qrbn'.includes(promo))promo='q'}
 const m=chess.move({from,to,promotion:promo});if(!m)return toast('That move is not legal');after()}
-function after(){sel=null;targets=[];renderBoard();const o=overInfo();if(!o)return;const p=pair();
-if(p&&!p.result){p.pgn=chess.pgn();p.result=o.res;save();toast(o.text+' · result recorded')}else toast(o.text)}
-function typed(){const v=$('moveIn').value.trim();if(!v||!ready)return;let m=null;
+function after(){clockMove();sel=null;targets=[];renderBoard();finish(overInfo())}
+function finish(o){if(!o)return;const p=pair();if(p&&!p.result){p.pgn=chess.pgn();p.result=o.res;save();toast(o.text+' · result recorded')}else toast(o.text)}
+function typed(){const v=$('moveIn').value.trim();if(!v||!ready)return;if(clock.over)return toast(clock.over.text);let m=null;
 if(/^[a-h][1-8][a-h][1-8][qrbn]?$/i.test(v)){const l=v.toLowerCase();m=chess.move({from:l.slice(0,2),to:l.slice(2,4),promotion:l[4]||'q'})}else m=chess.move(v,{sloppy:true});
 if(!m)return toast('Move not recognised or illegal');$('moveIn').value='';after()}
 function saveMoves(){const p=pair();if(!p)return toast('Choose a tournament match first');p.pgn=chess.pgn();const o=overInfo();if(o&&!p.result)p.result=o.res;save();toast('Moves saved to match')}
@@ -287,16 +292,37 @@ $('roundCount').onchange=e=>{const t=getT();if(t){t.maxRounds=+e.target.value;sa
 $('rename').onclick=()=>{const t=getT(),n=t&&prompt('New tournament name:',t.name);if(n&&n.trim()){t.name=n.trim();save()}};
 $('delT').onclick=()=>{const t=getT();if(t&&confirm(`Delete "${t.name}" and all its rounds?`)){if(sb&&user&&t.owner===user.id)sb.from('tournaments').delete().eq('id',t.id).then(()=>{});data.tournaments=data.tournaments.filter(x=>x.id!==t.id);if(match&&match.t===t.id){match=null;if(ready)chess=new Chess()}cur=null;save();go('tournaments')}};
 $('finish').onclick=()=>{const t=getT();if(t){t.status='finished';save();toast('Tournament finished')}};$('reopen').onclick=()=>{const t=getT();if(t){t.status='active';save()}};
-$('flip').onclick=()=>{flip=!flip;renderBoard()};$('undo').onclick=()=>{chess.undo();sel=null;targets=[];renderBoard()};
-$('reset').onclick=()=>{if(confirm('Reset the board to the starting position?')){chess=new Chess();sel=null;targets=[];renderBoard()}};
+$('flip').onclick=()=>{flip=!flip;renderBoard();drawClock()};$('undo').onclick=()=>{clockPause();chess.undo();sel=null;targets=[];renderBoard()};
+$('reset').onclick=()=>{if(confirm('Reset the board to the starting position?')){chess=new Chess();clockReset();sel=null;targets=[];renderBoard()}};
 $('play').onclick=typed;$('moveIn').onkeydown=e=>{if(e.key==='Enter')typed()};$('saveMoves').onclick=saveMoves;
 $('copyFen').onclick=()=>copy(chess.fen(),'FEN copied');$('copyPrompt').onclick=copyPrompt;$('dlPgn').onclick=dlPgn;
-$('matchSel').onchange=e=>{const v=e.target.value;if(v==='practice'){match=null;chess=new Chess();sel=null;targets=[];$('bTitle').textContent='Practice board';renderBoard();return}const[t,r,i]=v.split('|');loadMatch(t,+r,+i)};
+$('matchSel').onchange=e=>{const v=e.target.value;if(v==='practice'){match=null;chess=new Chess();clockReset();sel=null;targets=[];$('bTitle').textContent='Practice board';renderBoard();return}const[t,r,i]=v.split('|');loadMatch(t,+r,+i)};
+/* ---------- Chess clock ---------- */
+const clock={on:false,base:0,inc:0,w:0,b:0,run:null,last:0,started:false,over:null,t:null};
+const TC={off:null,'1+0':[60,0],'3+0':[180,0],'3+2':[180,2],'5+0':[300,0],'5+3':[300,3],'10+0':[600,0],'10+5':[600,5],'15+10':[900,10],'30+0':[1800,0]};
+const left=c=>clock[c]-(clock.run===c?Date.now()-clock.last:0);
+const fmtC=ms=>{ms=Math.max(0,ms);if(ms<20000)return(ms/1000).toFixed(1);const s=Math.ceil(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+function clockReset(){const v=TC[$('tc').value];clearInterval(clock.t);clock.on=!!v;clock.base=v?v[0]*1000:0;clock.inc=v?v[1]*1000:0;clock.w=clock.b=clock.base;clock.run=null;clock.started=false;clock.over=null;drawClock()}
+function clockPause(){if(clock.run){clock[clock.run]=left(clock.run);clock.run=null}clearInterval(clock.t);clock.started=false;clock.over=null;drawClock()}
+function drawClock(){const box=document.querySelector('.clocks');box.hidden=!clock.on;if(!clock.on)return;
+$('clkB').style.order=flip?2:0;$('clkW').style.order=flip?0:2;
+for(const c of['w','b']){const el=$(c==='w'?'clkW':'clkB'),ms=left(c);el.textContent=(c==='w'?'White ':'Black ')+fmtC(ms);
+el.classList.toggle('run',clock.run===c);el.classList.toggle('low',ms<10000&&ms>0);el.classList.toggle('flag',!!clock.over&&clock.over.flag===c)}}
+function tick(){if(clock.run&&!clock.over&&left(clock.run)<=0){const loser=clock.run;clock[loser]=0;clock.run=null;clearInterval(clock.t);
+clock.over={res:loser==='w'?'0-1':'1-0',text:`${loser==='w'?'White':'Black'} lost on time`,flag:loser};renderBoard();finish(clock.over)}drawClock()}
+function clockMove(){if(!clock.on||clock.over)return;const mover=chess.turn()==='w'?'b':'w';
+if(clock.run===mover)clock[mover]=left(mover)+clock.inc;
+clock.started=true;clearInterval(clock.t);
+if(chess.game_over()){clock.run=null}else{clock.run=chess.turn();clock.last=Date.now();clock.t=setInterval(tick,100)}
+drawClock()}
+$('tc').onchange=()=>{clockReset();if(chess.history().length)toast('Clock set. It starts on the next move.')};
+clockReset();
+
 /* ---------- Drag and drop (click-to-move still works) ---------- */
 let drag=null,noClick=false;
 const boardEl=$('board');
 boardEl.addEventListener('pointerdown',e=>{
-  if(!ready||e.button>0)return;
+  if(!ready||e.button>0||clock.over)return;
   const el=e.target.closest('.sq');if(!el)return;
   const sq=el.dataset.sq,pc=chess.get(sq);
   if(!pc||pc.color!==chess.turn())return;
