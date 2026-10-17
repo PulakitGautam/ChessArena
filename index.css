@@ -145,3 +145,16 @@ input::placeholder{color:#7d889f}
 @media(max-width:700px){.steps{grid-template-columns:1fr}}
 @media(pointer:coarse){button,select,input[type=text],input[type=password]{min-height:44px}.chip button{min-width:32px;min-height:32px}}
 
+
+/* v1.1 clock controls and templates */
+.clockctl{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:-2px 0 12px}.clockctl[hidden]{display:none}
+.clockctl button{min-height:36px;padding:6px 10px;font-size:13px}
+.adj{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px}
+.clk.paused{opacity:.7;border-style:dashed}
+.twof{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tpls{display:grid;gap:10px}
+.tpl{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#0c1018}
+.tpl b{display:block}.tpl small{color:var(--muted);font-size:13px}.tpl .row{flex:none}
+.chk{display:flex;gap:8px;align-items:center;font-size:14px}.chk input{width:18px;height:18px;accent-color:var(--accent)}
+.ro #saveTpl{display:none}.ro #tClock{pointer-events:none}.ro .clockctl{display:none}
+@media(max-width:480px){.twof{grid-template-columns:1fr}.tpl{flex-direction:column;align-items:flex-start}}
