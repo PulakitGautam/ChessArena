@@ -1,6 +1,6 @@
 /* Chess Arena service worker: makes the app open and run offline. */
-const V = 'arena-v10';
-const SHELL = ['./', './index.html', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+const V = 'arena-v11';
+const SHELL = ['./', './index.html', './index.css', './index.js', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 const CDN = [
   'https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js',
@@ -40,7 +40,16 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Everything else: use the saved copy instantly and refresh it in the background.
+  // Our own files (index.css, index.js, icons): network first, so the page and its scripts never get out of step after an update.
+  if (url.origin === location.origin) {
+    e.respondWith(
+      fetch(req).then(r => { if (r.ok) { const cp = r.clone(); caches.open(V).then(c => c.put(req, cp)); } return r; })
+        .catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // Third-party files (chess.js, fonts): use the saved copy instantly and refresh it in the background.
   e.respondWith(
     caches.match(req).then(hit => {
       const net = fetch(req).then(r => {
