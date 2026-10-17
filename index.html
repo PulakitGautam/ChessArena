@@ -6,8 +6,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 <script>window.Chess||document.write('<script src="https://cdn.jsdelivr.net/npm/chess.js@0.10.3/chess.min.js"><\/script>')</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap">
 <style>
-:root{--bg:#0b0d12;--panel:#131722;--line:#293143;--text:#f2f4fa;--muted:#98a2b7;--accent:#9b8cff;--accent2:#c2b8ff;--green:#6ed6a0;--gold:#ffd479}
+:root{--bg:#0a0c12;--surface:#11151f;--line:#273148;--text:#eef1f8;--muted:#a6b0c4;--accent:#8b7cf6;--accent2:#c4bbff;--green:#5fd3a0;--gold:#e8c46a;--font:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--head:Manrope,Inter,system-ui,sans-serif}
 *{box-sizing:border-box}
 body{margin:0;background:radial-gradient(ellipse at top left,#1c2030 0,#0b0d12 50%) fixed;color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
 button,input,select{font:inherit}
@@ -44,7 +46,7 @@ button.quiet{background:transparent}button.danger{color:#ffb4bb}button:disabled{
 .pill{display:inline-block;padding:3px 8px;border-radius:99px;background:#27243d;color:#c9c0ff;font-size:11px;font-weight:700}
 .pill.green{background:#163529;color:#8ee4b7}.pill.gold{background:#3a3020;color:#ffda8b}
 .field{display:grid;gap:6px;margin-bottom:12px}.field label{font-size:12px;color:#aeb6c8}
-input[type=text],select{width:100%;background:#0d1119;border:1px solid #30384a;color:var(--text);border-radius:9px;padding:10px 12px}
+input[type=text],input[type=password],select{width:100%;background:#0d1119;border:1px solid #30384a;color:var(--text);border-radius:9px;padding:10px 12px}
 .inline{display:flex;gap:8px;margin:12px 0}.inline input{flex:1;min-width:0}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
 .chip{display:flex;gap:7px;align-items:center;border:1px solid #30384a;background:#1a2030;padding:6px 9px;border-radius:9px;font-size:13px}
@@ -76,6 +78,8 @@ td.x{text-align:center;padding:9px 6px}.rank{color:var(--accent2);font-weight:80
 .clocks{display:flex;gap:8px;margin-bottom:10px}.clocks[hidden]{display:none}
 .clk{flex:1;text-align:center;font:700 20px/1 ui-monospace,monospace;padding:11px 8px;border-radius:10px;background:#0c1017;border:1px solid #293142;color:#aab2c6}
 .clk.run{border-color:var(--accent);background:#22243a;color:#fff}.clk.low{color:#ff9aa5}.clk.flag{background:#3a2025;border-color:#7a3a45;color:#ffb4bb}
+.aigrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:520px){.aigrid{grid-template-columns:1fr}}
+.ro #aiPanel{display:none}
 .tools{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:12px}.tools button{font-size:13px}
 .moves{background:#0c1017;border:1px solid #293142;border-radius:10px;padding:10px;min-height:90px;max-height:220px;overflow:auto;font:13px/1.8 ui-monospace,monospace;color:#c6cce0}
 .mrow{display:grid;grid-template-columns:30px 1fr 1fr;gap:7px}.mrow span:first-child{color:#6f7b92}
@@ -91,7 +95,7 @@ td.x{text-align:center;padding:9px 6px}.rank{color:var(--accent2);font-weight:80
 .hero:before{content:"";position:absolute;right:-60px;top:-80px;width:300px;height:300px;border-radius:50%;background:radial-gradient(#7362df55,transparent 70%);pointer-events:none}
 .heroknight{width:118px;height:118px;--f:#c2b8ff;--s:#2a2450;filter:drop-shadow(0 10px 22px #7362df88);position:relative}
 .hero .big{font-size:0}
-.card{transition:transform .15s,border-color .15s,box-shadow .15s}.card:hover{transform:translateY(-3px);box-shadow:0 12px 30px #0005}
+.card{transition:border-color .15s,box-shadow .15s}.card:hover{box-shadow:0 12px 30px #0005}
 .stat{border-top:3px solid #7362df66}
 tbody tr:hover{background:#1a2030}
 .rank.r1{color:#ffd479}.rank.r2{color:#d6dbe6}.rank.r3{color:#e0a47a}
@@ -99,20 +103,54 @@ tbody tr:hover{background:#1a2030}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 .ro #newT,.ro #heroNew,.ro #heroDemo,.ro #importBtn,.ro #exportBtn,.ro #authBtn,.ro #addEv,.ro #genRound,.ro #rename,.ro #delT,.ro #finish,.ro #reopen,.ro #shareBtn,.ro #saveMoves,.ro .results,.ro [data-score],.ro [data-rm-event],.ro [data-rm-player]{display:none}
 .ro #roundCount{pointer-events:none}
+/* v0.9 design refresh */
+body{font:16px/1.55 var(--font);background:radial-gradient(1200px 600px at 0 0,#171b2c 0,transparent 60%) fixed,var(--bg);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,.stat b{font-family:var(--head);letter-spacing:-.02em}
+.topbar h2{font-weight:800}.brand h1{font-weight:800}
+table,.clk,.stat b{font-variant-numeric:tabular-nums}
+.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.sidebar{background:var(--surface)}.sidefoot{color:#8d97ac}
+.nav button{display:flex;align-items:center;gap:10px;min-height:44px;color:#b5bed1;font-weight:500}
+.nav button:hover{background:#1a2030}
+.nav button.active{background:#1f2540;border-color:transparent;color:#fff;box-shadow:inset 3px 0 0 var(--accent)}
+.panel,.stat,.card{background:var(--surface);border-color:var(--line)}.panel{padding:20px}
+button{min-height:40px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:600}
+button.primary{background:linear-gradient(180deg,#9a8cff,#7a69ee);border-color:#7a69ee;color:#0e0b24}
+button.primary:hover:not(:disabled){filter:brightness(1.08)}button:active:not(:disabled){filter:brightness(.92)}
+.card{display:block}
+:focus-visible{outline:3px solid var(--accent2);outline-offset:2px}
+.eyebrow{letter-spacing:.08em;text-transform:uppercase;font-size:12px}
+.hint{font-size:13px;color:#9aa5bb}th{color:#9aa5bb}.pill{font-size:12px;font-weight:600}
+.field label{font-size:13px;color:#b7c0d3}.stat span{font-size:13px}
+input[type=text],input[type=password],select{background:#0c1018;border-color:#2c3650;min-height:40px}
+input::placeholder{color:#7d889f}
+.hero{background:linear-gradient(125deg,#1d1a36,#12161f 70%)}.hero h3{font-size:clamp(24px,3vw,32px);font-weight:800}
+.skip{position:absolute;left:-999px;top:8px;background:var(--accent);color:#0e0b24;padding:10px 14px;border-radius:8px;z-index:100;font-weight:700}.skip:focus{left:8px}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:8px}
+.step{display:flex;gap:12px;align-items:flex-start;padding:16px;border:1px solid var(--line);border-radius:15px;background:var(--surface)}
+.step .n{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#262049;color:var(--accent2);font:800 14px var(--head)}
+.step h4{margin:0 0 2px;font-size:15px}.step p{margin:0;color:var(--muted);font-size:14px}
+.toast{bottom:max(18px,env(safe-area-inset-bottom))}
+.btns button{min-width:44px}
+@media(max-width:700px){.steps{grid-template-columns:1fr}}
+@media(pointer:coarse){button,select,input[type=text],input[type=password]{min-height:44px}.chip button{min-width:32px;min-height:32px}}
+
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="p" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><circle cx="22.5" cy="13" r="5.5"/><path d="M17.5 21h10l-1.5 4c3.5 2.5 5.5 6.5 5.5 11h-19c0-4.5 2-8.5 5.5-11z"/><path d="M11.5 36h22v3.5h-22z"/></g></symbol><symbol id="r" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><path d="M12 39h21v-3.5H12z"/><path d="M14 35.5l1.5-4h14l1.5 4z"/><path d="M15.5 31.5V20h14v11.5z"/><path d="M12.5 20v-7.5H17V15h3.5v-2.5h4V15H28v-2.5h4.5V20z"/></g></symbol><symbol id="n" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><path d="M11 39C10.5 29 14 24 19.5 20C16.5 19.5 14.5 17.5 14.5 14.5L22 6L23.5 8.5C32 9 38 15.5 37.5 25C37.5 31 37 35 37 39Z"/><path d="M26 11C31 14 33 19 33 25" style="fill:none"/><circle cx="21" cy="14" r="1.3" style="fill:var(--s)"/></g></symbol><symbol id="b" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><circle cx="22.5" cy="8.5" r="3.2"/><path d="M22.5 12C28 16 31 21 28 27H17C14 21 17 16 22.5 12z"/><path d="M15 27h15v4H15z"/><path d="M12 31h21l1.5 8h-24z"/><path d="M20 20h5M22.5 17.5v5" style="fill:none"/></g></symbol><symbol id="q" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><path d="M9 14L13 26L16 11L19.5 24L22.5 9L25.5 24L29 11L32 26L36 14L31 33H14Z"/><path d="M12 33h21v6H12z"/><circle cx="9" cy="13" r="2"/><circle cx="16" cy="10" r="2"/><circle cx="22.5" cy="8" r="2"/><circle cx="29" cy="10" r="2"/><circle cx="36" cy="13" r="2"/></g></symbol><symbol id="k" viewBox="0 0 45 45"><g style="fill:var(--f);stroke:var(--s);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"><path d="M22.5 14C17 10 8.5 14 11.5 22L14.5 33h16L33.5 22C36.5 14 28 10 22.5 14z"/><path d="M12 33h21v6H12z"/><path d="M22.5 4.5v9.5M18.5 8.5h8" style="fill:none"/></g></symbol></defs></svg>
+<a class="skip" href="#main">Skip to main content</a>
 <div class="shell">
 <aside class="sidebar"><div class="brand"><div class="mark"><svg viewBox="0 0 45 45" width="30" height="30" aria-hidden="true" style="--f:#11101c;--s:#11101c"><use href="#n"/></svg></div><div><h1>Jester14 Arena</h1><small>Chess tournament hub</small></div></div>
-<nav class="nav" aria-label="Main"><button class="active" data-view="home">Overview</button><button data-view="tournaments">Tournaments</button><button data-view="boardview">Chessboard</button><button data-view="players">Players</button></nav>
-<div class="sidefoot">Saved on this device · v0.7</div></aside>
-<main class="main">
+<nav class="nav" aria-label="Main"><button class="active" data-view="home"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Overview</button><button data-view="tournaments"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>Tournaments</button><button data-view="boardview"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18M12 3v18"/></svg>Chessboard</button><button data-view="players"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5 6.5-5s6.5 1.5 6.5 5"/><path d="M16 5a3.5 3.5 0 0 1 0 7M18 15c2.5.5 3.5 2.5 3.5 5"/></svg>Players</button></nav>
+<div class="sidefoot">Saved on this device · v0.9</div></aside>
+<main class="main" id="main" tabindex="-1">
 <div id="libAlert" class="alert" hidden>The chess engine failed to load, so the board is disabled. Check your connection and reload.</div>
 <header class="topbar"><div><div class="eyebrow" id="eyebrow">Your chess HQ</div><h2 id="pageTitle">Welcome to the Arena</h2></div>
-<div class="row"><button class="quiet" id="authBtn">Sign in with GitHub</button><button class="quiet" id="exportBtn">Export data</button><button class="quiet" id="importBtn">Import data</button><input type="file" id="importFile" accept=".json,application/json" hidden><button class="primary" id="newT">＋ New tournament</button></div></header>
+<div class="row"><button class="quiet" id="authBtn">Sign in with GitHub</button><button class="quiet" id="exportBtn">Export data</button><button class="quiet" id="importBtn">Import data</button><input type="file" id="importFile" accept=".json,application/json" hidden><button class="primary" id="newT"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New tournament</button></div></header>
 
 <section class="view active" id="view-home">
 <div class="hero"><div><h3>Every tournament. One arena.</h3><p>Create Swiss events, generate pairings, and play or record games on an interactive board. Built for AI showdowns and human tournaments alike.</p><div class="row"><button class="primary" id="heroNew">Create a tournament</button><button id="heroDemo">Load demo tournament</button></div></div><svg class="big heroknight" viewBox="0 0 45 45" aria-hidden="true"><use href="#n"/></svg></div>
 <div class="stats"><div class="stat"><span>Tournaments</span><b id="sT">0</b></div><div class="stat"><span>Players</span><b id="sP">0</b></div><div class="stat"><span>Games recorded</span><b id="sG">0</b></div><div class="stat"><span>Active events</span><b id="sA">0</b></div></div>
+<div class="head"><h3>How it works</h3></div><div class="steps"><div class="step"><b class="n">1</b><div><h4>Create an event</h4><p>Choose Swiss, round robin or knockout and add your players.</p></div></div><div class="step"><b class="n">2</b><div><h4>Generate pairings</h4><p>Pairings are built round by round, avoiding repeat matchups.</p></div></div><div class="step"><b class="n">3</b><div><h4>Play and share</h4><p>Play on the board or record results, then share a live link.</p></div></div></div>
 <div class="head"><h3>Recent tournaments</h3><button class="quiet" data-view="tournaments">View all</button></div><div id="recent" class="cards"></div>
 </section>
 
@@ -128,14 +166,14 @@ tbody tr:hover{background:#1a2030}
 <div class="panel"><div class="head" style="margin-top:0"><h3>Standings</h3></div><div class="scroll" id="standings"></div></div>
 <div class="panel"><div class="head" style="margin-top:0"><h3>Rounds and pairings</h3><button id="genRound" class="primary">Generate next round</button></div><div id="rounds"></div></div>
 <div class="panel"><h3>Crosstable</h3><div class="scroll" id="cross"></div></div></div>
-<div><div class="panel"><div class="head" style="margin-top:0"><h3>Players in event</h3><button id="addEv">＋ Add players</button></div><div id="evPlayers" class="chips"></div></div>
+<div><div class="panel"><div class="head" style="margin-top:0"><h3>Players in event</h3><button id="addEv"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add players</button></div><div id="evPlayers" class="chips"></div></div>
 <div class="panel"><h3>Tournament controls</h3><div class="field"><label for="roundCount">Swiss rounds</label><select id="roundCount"></select></div><p class="hint">Players can only be removed before Round 1. After that they are marked as withdrawn and skipped in new pairings.</p><div class="row" style="margin-top:12px"><button id="finish">Finish tournament</button><button id="reopen">Reopen</button></div></div></div></div></section>
 
 <section class="view" id="view-boardview"><div class="boardlay"><div class="bpanel">
 <div class="btop"><div><div class="eyebrow">Live position</div><strong id="bTitle">Practice board</strong></div><span class="turn" id="turn">White to move</span></div>
 <div class="clocks" hidden><div id="clkB" class="clk">Black</div><div id="clkW" class="clk">White</div></div>
 <div id="board" class="board" aria-label="Chessboard"></div>
-<div class="tools"><div class="row"><button id="flip">⇅ Flip</button><button id="undo">↶ Undo</button><button id="reset">Reset</button></div><button id="saveMoves" class="primary">Save moves to match</button></div>
+<div class="tools"><div class="row"><button id="flip"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg>Flip</button><button id="undo"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>Undo</button><button id="reset">Reset</button></div><button id="saveMoves" class="primary">Save moves to match</button></div>
 <div class="status" id="bStatus" aria-live="polite"></div></div>
 <div><div class="panel"><h3>Game details</h3><div class="field"><label for="matchSel">Playing in</label><select id="matchSel"></select></div>
 <div class="field"><label for="tc">Chess clock (minutes + seconds per move)</label><select id="tc"><option value="off">Off</option><option value="1+0">1+0</option><option value="3+0">3+0</option><option value="3+2">3+2</option><option value="5+0">5+0</option><option value="5+3">5+3</option><option value="10+0">10+0</option><option value="10+5">10+5</option><option value="15+10">15+10</option><option value="30+0">30+0</option></select></div>
@@ -143,8 +181,16 @@ tbody tr:hover{background:#1a2030}
 <p class="hint">Click a piece then a square, or type a move. Games that end by mate or draw are recorded automatically in tournament matches.</p>
 <div class="head"><h3>Move history</h3><div class="row"><button id="copyFen">Copy FEN</button><button id="dlPgn">Download PGN</button></div></div><div id="moveHist" class="moves"></div>
 <div class="head"><h3>AI prompt helper</h3><button id="copyPrompt" class="primary">Copy prompt</button></div><p class="hint">Copies the current position with a request for one legal move. No API needed.</p></div>
+<div class="panel" id="aiPanel"><h3>AI vs AI</h3>
+<p class="hint" style="margin:0 0 12px">Pick who plays each colour. Models play each other (or you) move by move. Keys stay in this browser only and go straight to the AI provider. Each move is one API call and costs a small amount, so use your own device.</p>
+<div class="aigrid"><div><h4 style="margin:0 0 8px">White</h4><div class="field"><select id="aiWp" aria-label="White player type"><option value="human">Human</option><option value="anthropic">Anthropic (Claude)</option><option value="openai">OpenAI-compatible</option></select></div><div class="field"><input type="text" id="aiWm" placeholder="Model name" aria-label="White model"></div><div class="field"><input type="password" id="aiWk" placeholder="API key" autocomplete="off" aria-label="White API key"></div></div><div><h4 style="margin:0 0 8px">Black</h4><div class="field"><select id="aiBp" aria-label="Black player type"><option value="human">Human</option><option value="anthropic">Anthropic (Claude)</option><option value="openai">OpenAI-compatible</option></select></div><div class="field"><input type="text" id="aiBm" placeholder="Model name" aria-label="Black model"></div><div class="field"><input type="password" id="aiBk" placeholder="API key" autocomplete="off" aria-label="Black API key"></div></div></div>
+<div class="field"><label for="aiBase">OpenAI-compatible base URL (leave empty for OpenAI)</label><input type="text" id="aiBase" placeholder="https://api.openai.com/v1"></div>
+<div class="aigrid"><div class="field"><label for="aiDelay">Pause between moves</label><select id="aiDelay"><option value="0">None</option><option value="1" selected>1 second</option><option value="2">2 seconds</option><option value="5">5 seconds</option></select></div>
+<div class="field"><label>&nbsp;</label><label style="display:flex;gap:8px;align-items:center;color:var(--text);font-size:13px"><input type="checkbox" id="aiLegal" checked> Show legal moves to the model</label></div></div>
+<div class="row"><button id="aiStart" class="primary">Start AI game</button><button id="aiForget" class="quiet">Forget keys</button></div>
+<p class="hint">After 3 illegal answers in a row the model forfeits. In a tournament match the result is recorded automatically.</p></div>
 <div class="panel"><h3>Record a result</h3><p class="muted" style="font-size:13px">Pick a tournament match above, then record a result without playing it out.</p><div class="results"><button data-result="1-0">White wins</button><button data-result="1/2-1/2">Draw</button><button data-result="0-1">Black wins</button></div></div></div></div></section>
-<footer class="credit">Created with ♟️ by <strong>Pulakit</strong></footer>
+<footer class="credit">Created by <strong>Pulakit</strong></footer>
 </main></div><div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -273,12 +319,12 @@ const h=chess.history();let m='';for(let i=0;i<h.length;i+=2)m+=`<div class="mro
 $('undo').disabled=!h.length}
 function clickSq(sq){if(noClick)return;const pc=chess.get(sq);if(sel&&targets.includes(sq)){move(sel,sq);return}
 if(pc&&pc.color===chess.turn()){sel=sq;targets=chess.moves({square:sq,verbose:true}).map(m=>m.to)}else{sel=null;targets=[]}renderBoard()}
-function move(from,to){if(clock.over)return toast(clock.over.text);const ms=chess.moves({square:from,verbose:true}).filter(m=>m.to===to);let promo;
+function move(from,to){if(clock.over)return toast(clock.over.text);if(AI.on&&AI.busy)return toast('The AI is thinking');const ms=chess.moves({square:from,verbose:true}).filter(m=>m.to===to);let promo;
 if(ms.some(m=>m.flags.includes('p'))){promo=(prompt('Promote to (q, r, b or n)?','q')||'q').toLowerCase();if(!'qrbn'.includes(promo))promo='q'}
 const m=chess.move({from,to,promotion:promo});if(!m)return toast('That move is not legal');after()}
-function after(){clockMove();sel=null;targets=[];renderBoard();finish(overInfo())}
+function after(){clockMove();sel=null;targets=[];renderBoard();finish(overInfo());if(AI.on&&!overInfo())setTimeout(aiStep,Math.max(50,(+$('aiDelay').value||0)*1000))}
 function finish(o){if(!o)return;const p=pair();if(p&&!p.result){if(isKO()&&o.res==='1/2-1/2')return toast('Drawn. '+KODRAW);p.pgn=chess.pgn();p.result=o.res;save();toast(o.text+' · result recorded')}else toast(o.text)}
-function typed(){const v=$('moveIn').value.trim();if(!v||!ready)return;if(clock.over)return toast(clock.over.text);let m=null;
+function typed(){const v=$('moveIn').value.trim();if(!v||!ready)return;if(clock.over)return toast(clock.over.text);if(AI.on&&AI.busy)return toast('The AI is thinking');let m=null;
 if(/^[a-h][1-8][a-h][1-8][qrbn]?$/i.test(v)){const l=v.toLowerCase();m=chess.move({from:l.slice(0,2),to:l.slice(2,4),promotion:l[4]||'q'})}else m=chess.move(v,{sloppy:true});
 if(!m)return toast('Move not recognised or illegal');$('moveIn').value='';after()}
 function saveMoves(){const p=pair();if(!p)return toast('Choose a tournament match first');p.pgn=chess.pgn();const o=overInfo();if(o&&!p.result)p.result=o.res;save();toast('Moves saved to match')}
@@ -316,13 +362,63 @@ $('reset').onclick=()=>{if(confirm('Reset the board to the starting position?'))
 $('play').onclick=typed;$('moveIn').onkeydown=e=>{if(e.key==='Enter')typed()};$('saveMoves').onclick=saveMoves;
 $('copyFen').onclick=()=>copy(chess.fen(),'FEN copied');$('copyPrompt').onclick=copyPrompt;$('dlPgn').onclick=dlPgn;
 $('matchSel').onchange=e=>{const v=e.target.value;if(v==='practice'){match=null;chess=new Chess();clockReset();sel=null;targets=[];$('bTitle').textContent='Practice board';renderBoard();return}const[t,r,i]=v.split('|');loadMatch(t,+r,+i)};
+/* ---------- AI vs AI ---------- */
+const AI={on:false,busy:false};
+const AIK='jester14_ai_cfg',AIIDS=['aiWp','aiWm','aiWk','aiBp','aiBm','aiBk','aiBase','aiDelay','aiLegal'];
+try{const c=JSON.parse(localStorage.getItem(AIK)||'{}');AIIDS.forEach(i=>{if(i in c){const el=$(i);if(el.type==='checkbox')el.checked=c[i];else el.value=c[i]}})}catch(e){}
+$('aiPanel').addEventListener('input',()=>{try{const c={};AIIDS.forEach(i=>{const el=$(i);c[i]=el.type==='checkbox'?el.checked:el.value});localStorage.setItem(AIK,JSON.stringify(c))}catch(e){}});
+const aiSide=c=>{const k=c==='w'?'W':'B';return{prov:$('ai'+k+'p').value,model:$('ai'+k+'m').value.trim(),key:$('ai'+k+'k').value.trim()}};
+function aiStop(){AI.on=false;const b=$('aiStart');b.textContent='Start AI game';b.classList.add('primary')}
+async function askModel(cfg,prompt){
+  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),60000);
+  try{
+    let url,headers,body;
+    if(cfg.prov==='anthropic'){url='https://api.anthropic.com/v1/messages';headers={'content-type':'application/json','x-api-key':cfg.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};body={model:cfg.model,max_tokens:200,messages:[{role:'user',content:prompt}]}}
+    else{url=($('aiBase').value.trim()||'https://api.openai.com/v1').replace(/\/$/,'')+'/chat/completions';headers={'content-type':'application/json',authorization:'Bearer '+cfg.key};body={model:cfg.model,messages:[{role:'user',content:prompt}]}}
+    const r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body),signal:ctl.signal});
+    if(!r.ok)throw new Error(r.status+' '+(await r.text()).slice(0,200));
+    const d=await r.json();
+    return cfg.prov==='anthropic'?(d.content||[]).map(x=>x.text||'').join(' '):(d.choices?.[0]?.message?.content||'');
+  }finally{clearTimeout(to)}
+}
+function parseMove(text){
+  const L=chess.moves({verbose:true});
+  for(const raw of String(text).replace(/[\n,;]/g,' ').split(/\s+/)){
+    const t=raw.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9+#=-]+$/g,'').replace(/0/g,'O').replace(/[+#]/g,'');if(!t)continue;
+    for(const m of L)if(m.san.replace(/[+#]/g,'')===t||(m.from+m.to+(m.promotion||''))===t.toLowerCase())return m}
+  return null}
+async function aiStep(){
+  if(!AI.on||AI.busy||!ready)return;
+  if(overInfo()){aiStop();return}
+  const c=chess.turn(),cfg=aiSide(c),nm=c==='w'?'White':'Black';
+  if(cfg.prov==='human'){$('bStatus').textContent=`${nm} is human. Make your move.`;return}
+  if(!cfg.model||!cfg.key){aiStop();return toast(`Enter a model name and API key for ${nm}`)}
+  AI.busy=true;let mv=null,bad='',err=null;
+  try{
+    for(let i=0;i<3&&!mv&&AI.on;i++){
+      $('bStatus').textContent=`${nm} (${cfg.model}) is thinking…`+(i?` attempt ${i+1} of 3`:'');
+      const text=await askModel(cfg,`You are playing chess as ${nm}. Reply with exactly one legal move in SAN (for example Nf3, exd5, O-O, e8=Q) and nothing else.\nFEN: ${chess.fen()}\nMoves so far: ${chess.pgn()||'(none)'}`+($('aiLegal').checked?`\nLegal moves: ${chess.moves().join(', ')}`:'')+(bad?`\nYour previous answer "${bad}" was not a legal move. Try again.`:''));
+      mv=parseMove(text);if(!mv)bad=String(text).trim().slice(0,40)
+    }
+  }catch(e){err=e}
+  AI.busy=false;
+  if(!AI.on)return;
+  if(err){aiStop();return toast('AI error: '+(err.name==='AbortError'?'the request timed out':err.message))}
+  if(!mv){aiStop();const o={res:c==='w'?'0-1':'1-0',text:`${nm} lost: no legal move after 3 tries`};clock.over=o;renderBoard();finish(o);return}
+  chess.move({from:mv.from,to:mv.to,promotion:mv.promotion});after()}
+$('aiStart').onclick=()=>{
+  if(AI.on){aiStop();$('bStatus').textContent='AI game stopped.';return}
+  if(!ready)return;if(overInfo())return toast('This game is over. Reset the board or pick another match.');
+  AI.on=true;$('aiStart').textContent='Stop AI game';$('aiStart').classList.remove('primary');aiStep()};
+$('aiForget').onclick=()=>{$('aiWk').value=$('aiBk').value='';$('aiPanel').dispatchEvent(new Event('input'));toast('Keys cleared from this device')};
+
 /* ---------- Chess clock ---------- */
 const clock={on:false,base:0,inc:0,w:0,b:0,run:null,last:0,started:false,over:null,t:null};
 const TC={off:null,'1+0':[60,0],'3+0':[180,0],'3+2':[180,2],'5+0':[300,0],'5+3':[300,3],'10+0':[600,0],'10+5':[600,5],'15+10':[900,10],'30+0':[1800,0]};
 const left=c=>clock[c]-(clock.run===c?Date.now()-clock.last:0);
 const fmtC=ms=>{ms=Math.max(0,ms);if(ms<20000)return(ms/1000).toFixed(1);const s=Math.ceil(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
-function clockReset(){const v=TC[$('tc').value];clearInterval(clock.t);clock.on=!!v;clock.base=v?v[0]*1000:0;clock.inc=v?v[1]*1000:0;clock.w=clock.b=clock.base;clock.run=null;clock.started=false;clock.over=null;drawClock()}
-function clockPause(){if(clock.run){clock[clock.run]=left(clock.run);clock.run=null}clearInterval(clock.t);clock.started=false;clock.over=null;drawClock()}
+function clockReset(){aiStop();const v=TC[$('tc').value];clearInterval(clock.t);clock.on=!!v;clock.base=v?v[0]*1000:0;clock.inc=v?v[1]*1000:0;clock.w=clock.b=clock.base;clock.run=null;clock.started=false;clock.over=null;drawClock()}
+function clockPause(){aiStop();if(clock.run){clock[clock.run]=left(clock.run);clock.run=null}clearInterval(clock.t);clock.started=false;clock.over=null;drawClock()}
 function drawClock(){const box=document.querySelector('.clocks');box.hidden=!clock.on;if(!clock.on)return;
 $('clkB').style.order=flip?2:0;$('clkW').style.order=flip?0:2;
 for(const c of['w','b']){const el=$(c==='w'?'clkW':'clkB'),ms=left(c);el.textContent=(c==='w'?'White ':'Black ')+fmtC(ms);
